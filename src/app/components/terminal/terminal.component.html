@@ -1,0 +1,77 @@
+<div class="terminal" (click)="focusOnClick()">
+
+  <!-- Title bar -->
+  <div class="titlebar">
+    <div class="wm-btns">
+      <span class="btn btn-red"></span>
+      <span class="btn btn-yellow"></span>
+      <span class="btn btn-green"></span>
+    </div>
+    <div class="title">dayana&#64;portfolio: ~</div>
+    <div class="tb-menu">
+      <span>File</span><span>Edit</span><span>View</span><span>Terminal</span><span>Help</span>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="body" #terminalBody>
+
+    <!-- MOTD with typing animation -->
+    <div class="motd" *ngIf="motdLines().length">
+      <div
+        *ngFor="let line of motdLines()"
+        class="motd-line"
+        [innerHTML]="line"
+      ></div>
+    </div>
+
+    <!-- Terminal history -->
+    <div class="history" *ngIf="motdDone()">
+      <ng-container *ngFor="let line of terminal.lines()">
+
+        <!-- Input line -->
+        <div class="prompt-line" *ngIf="line.type === 'input'">
+          <span class="ps-user">dayana</span><span class="ps-at">&#64;</span><span class="ps-host">portfolio</span><span class="ps-colon">:</span><span class="ps-path">~</span><span class="ps-dollar">$&nbsp;</span>
+          <span class="cmd-text">{{ line.content }}</span>
+        </div>
+
+        <!-- Output line -->
+        <div class="output-line"
+          *ngIf="line.type === 'output'"
+          [innerHTML]="line.content">
+        </div>
+
+      </ng-container>
+    </div>
+
+    <!-- Active input -->
+    <div class="input-row" *ngIf="motdDone()">
+      <span class="ps-user">dayana</span><span class="ps-at">&#64;</span><span class="ps-host">portfolio</span><span class="ps-colon">:</span><span class="ps-path">~</span><span class="ps-dollar">$&nbsp;</span>
+      <span class="input-inner">
+        <span class="input-ghost" aria-hidden="true">{{ inputValue || '' }}<span class="cursor" [class.visible]="showCursor()"></span></span>
+        <input
+          #terminalInput
+          class="terminal-input"
+          [(ngModel)]="inputValue"
+          (keydown.enter)="onEnter()"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="type a command..."
+        />
+      </span>
+    </div>
+
+  </div>
+
+  <!-- Shortcuts -->
+  <div class="shortcuts" *ngIf="motdDone()">
+    <button
+      *ngFor="let s of shortcuts"
+      class="shortcut"
+      (mousedown)="$event.preventDefault(); runShortcut(s.cmd)"
+    >{{ s.label }}</button>
+  </div>
+
+</div>
