@@ -102,7 +102,12 @@ export class TerminalService {
     this.pushInput(raw.trim());
     const catMatch = cmd.match(/^cat\s+(\S+)$/);
     if (catMatch && catMatch[1] !== "stack") {
-      this.cmdCat(parseInt(catMatch[1], 10));
+      const id = parseInt(catMatch[1], 10);
+      if (isNaN(id) || id < 1 || id > 9999) {
+        this.pushOutput(`<span class="red">invalid id</span><span class="dim"> · id must be a positive integer.</span>`);
+        return;
+      }
+      this.cmdCat(id);
       return;
     }
     this.pushOutput(this.resolve(cmd));
@@ -134,15 +139,16 @@ export class TerminalService {
   private cmdWhoami(): string {
     if (!this.profile) return this.errNoData();
     const p = this.profile;
+    const stackPills = p.profileStacks
+      .map(s => `<span class="pill pm">${this.esc(s.name)}</span>`)
+      .join('');
     return `<div class="t-box">
-      <div class="t-row"><span class="t-k">name</span><span class="wht">${p.name}</span></div>
-      <div class="t-row"><span class="t-k">role</span><span class="grn">${p.role}</span></div>
-      <div class="t-row"><span class="t-k">stack</span><span class="wht">${p.stack.map((s) => s.name).join(" · ")}</span></div>
-      <div class="t-row"><span class="t-k">location</span><span class="wht">${p.location}</span></div>
-      <div class="t-row"><span class="t-k">experience</span><span class="wht">${p.experience}</span></div>
-      <div class="t-row"><span class="t-k">email</span><span class="blu">${p.email}</span></div>
-      <div class="t-row"><span class="t-k">phone</span><span class="wht">${p.phoneNo}</span></div>
-      <div class="t-row"><span class="t-k">status</span><span class="yel">${p.status.name}</span></div>
+      <div class="t-row"><span class="t-k">name</span><span class="wht">${this.esc(p.name)}</span></div>
+      <div class="t-row"><span class="t-k">role</span><span class="grn">${this.esc(p.role)}</span></div>
+      <div class="t-row"><span class="t-k">experience</span><span class="wht">${this.esc(p.yearsOfExperience)}</span></div>
+      <div class="t-row"><span class="t-k">location</span><span class="wht">${this.esc(p.location)}</span></div>
+      <div class="t-row"><span class="t-k">status</span><span class="yel">${this.esc(p.status.name)}</span></div>
+      <div class="t-row"><span class="t-k">stack</span><span style="display:flex;flex-wrap:wrap;gap:3px">${stackPills}</span></div>
       </div>`;
   }
 
@@ -152,13 +158,13 @@ export class TerminalService {
       .map(
         (p, i) => `
       <tr>
-        <td class="grn">${String(i + 1).padStart(3, "0")} ${p.name}/</td>
-        <td>${p.stack
+        <td class="grn">${String(i + 1).padStart(3, "0")} ${this.esc(p.name)}/</td>
+        <td>${p.projectStacks
           .slice(0, 3)
-          .map((s) => `<span class="pill pm">${s.name}</span>`)
+          .map((s) => `<span class="pill pm">${this.esc(s.name)}</span>`)
           .join("")}</td>
-        <td class="yel">${p.impact}</td>
-        <td class="grn">${p.status.name}</td>
+        <td class="yel">${this.esc(p.impact)}</td>
+        <td class="grn">${this.esc(p.status.name)}</td>
       </tr>`,
       )
       .join("");
@@ -188,10 +194,10 @@ export class TerminalService {
                 : s.profiency === "Intermediate"
                   ? "yel"
                   : "dim";
-            return `<span class="pill pm"><span class="${cls}">${s.name}</span></span>`;
+            return `<span class="pill pm"><span class="${cls}">${this.esc(s.name)}</span></span>`;
           })
           .join("");
-        return `<div class="t-section-hdr">// ${category.toLowerCase()}</div>
+        return `<div class="t-section-hdr">// ${this.esc(category.toLowerCase())}</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${pills}</div>`;
       })
       .join("");
@@ -208,8 +214,8 @@ export class TerminalService {
         <span class="dim">* </span><span class="yel">${hash}</span>
         ${isCurrent ? '<span class="wht">(HEAD → main)</span>' : ""}
         <span class="grn">feat:</span>
-        <span class="wht">${e.role} @ ${e.company} · ${e.duration}</span>
-        <span class="dim"> [${e.type}]</span>
+        <span class="wht">${this.esc(e.role)} @ ${this.esc(e.company)} · ${this.esc(e.duration)}</span>
+        <span class="dim"> [${this.esc(e.type)}]</span>
         </div>`;
       })
       .join("");
@@ -242,20 +248,20 @@ export class TerminalService {
         const sections = Object.entries(grouped)
           .map(
             ([title, bullets]) => `
-        <div class="t-section-hdr">// ${title.toLowerCase()}</div>
-        ${bullets.map((b) => `<div class="t-bullet"><span class="grn t-bullet-dot">▸</span><span>${b}</span></div>`).join("")}
+        <div class="t-section-hdr">// ${this.esc(title.toLowerCase())}</div>
+        ${bullets.map((b) => `<div class="t-bullet"><span class="grn t-bullet-dot">▸</span><span>${this.esc(b)}</span></div>`).join("")}
         `,
           )
           .join("");
-        const stackPills = d.stack
-          .map((s) => `<span class="pill pm">${s.name}</span>`)
+        const stackPills = d.experienceStack
+          .map((s) => `<span class="pill pm">${this.esc(s.name)}</span>`)
           .join("");
         this.replaceLastOutput(`<div class="t-box">
-        <div class="t-row"><span class="t-k">role</span><span class="grn">${d.role}</span></div>
-        <div class="t-row"><span class="t-k">company</span><span class="wht">${d.company}</span></div>
-        <div class="t-row"><span class="t-k">location</span><span class="wht">${d.location}</span></div>
-        <div class="t-row"><span class="t-k">duration</span><span class="yel">${d.duration}</span></div>
-        <div class="t-row"><span class="t-k">type</span><span class="dim">${d.type}</span></div>
+        <div class="t-row"><span class="t-k">role</span><span class="grn">${this.esc(d.role)}</span></div>
+        <div class="t-row"><span class="t-k">company</span><span class="wht">${this.esc(d.company)}</span></div>
+        <div class="t-row"><span class="t-k">location</span><span class="wht">${this.esc(d.location)}</span></div>
+        <div class="t-row"><span class="t-k">duration</span><span class="yel">${this.esc(d.duration)}</span></div>
+        <div class="t-row"><span class="t-k">type</span><span class="dim">${this.esc(d.type)}</span></div>
         ${sections}
         <div class="t-section-hdr">// stack used</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px">${stackPills}</div>
@@ -270,9 +276,9 @@ export class TerminalService {
     return this.education
       .map(
         (e) => `<div class="t-box">
-        <div class="t-row"><span class="t-k">degree</span><span class="grn">${e.degree}</span></div>
-        <div class="t-row"><span class="t-k">field</span><span class="wht">${e.fieldOfStudy}</span></div>
-        <div class="t-row"><span class="t-k">institution</span><span class="wht">${e.name}</span></div>
+        <div class="t-row"><span class="t-k">degree</span><span class="grn">${this.esc(e.degree)}</span></div>
+        <div class="t-row"><span class="t-k">field</span><span class="wht">${this.esc(e.fieldOfStudy)}</span></div>
+        <div class="t-row"><span class="t-k">institution</span><span class="wht">${this.esc(e.name)}</span></div>
         <div class="t-row"><span class="t-k">period</span><span class="yel">${e.startDate} – ${e.endDate}</span></div>
         </div>`,
       )
@@ -284,11 +290,19 @@ export class TerminalService {
     const p = this.profile;
     return `<div class="t-out">
     <span class="grn">200 OK</span> · drop a message, she will get back to you.<br>
-    <span class="dim">→ email   :</span> <span class="blu">${p.email}</span><br>
-    <span class="dim">→ github   :</span> <span class="blu">${p.github}</span><br>
-    <span class="dim">→ linkedIn   :</span> <span class="blu">${p.linkedin}</span><br>
-    <span class="dim">→ phone   :</span> <span class="wht">${p.phoneNo}</span><br>
+    <span class="dim">→ email   :</span> <span class="blu">${this.esc(p.email)}</span><br>
+    <span class="dim">→ github  :</span> <a class="blu" href="${this.esc(p.github)}" target="_blank" rel="noopener noreferrer">${this.esc(p.github)}</a><br>
+    <span class="dim">→ linkedin:</span> <a class="blu" href="${this.esc(p.linkedin)}" target="_blank" rel="noopener noreferrer">${this.esc(p.linkedin)}</a><br>
+    <span class="dim">→ phone   :</span> <span class="wht">${this.esc(p.phoneNo)}</span><br>
     </div>`;
+  }
+
+  private esc(s: string): string {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   private errNoData(): string {
