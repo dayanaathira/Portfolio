@@ -8,32 +8,6 @@ export interface IdName {
   name: string;
 }
 
-export interface Profile {
-  userId: string;
-  name: string;
-  email: string;
-  phoneNo: string;
-  github: string;
-  linkedin: string;
-  location: string;
-  stack: IdName[];
-  role: string;
-  experience: string;
-  status: IdName;
-}
-
-
-
-export interface Project {
-  id: number;
-  userId: string;
-  name: string;
-  stack: IdName[];
-  description: string;
-  impact: string;
-  status: IdName;
-}
-
 export interface Skill {
   id: number;
   name: string;
@@ -41,13 +15,38 @@ export interface Skill {
   profiency: string;
 }
 
+export interface Profile {
+  userId: string;
+  name: string;
+  email: string;
+  github: string;
+  linkedin: string;
+  phoneNo: string;
+  location: string;
+  profileStacks: Skill[];
+  role: string;
+  yearsOfExperience: string;
+  status: IdName;
+}
+
+
+
+export interface Project {
+  id: number;
+  name: string;
+  projectStacks: Skill[];
+  description: string;
+  impact: string;
+  status: IdName;
+}
+
 export interface Education {
   id: number;
   name: string;
   degree: string;
   fieldOfStudy: string;
-  startDate: string;
-  endDate: string;
+  startDate: number;
+  endDate: number;
 }
 
 export interface ExperienceEntry {
@@ -66,13 +65,14 @@ export interface ExperienceDetailItem {
 }
 
 export interface ExperienceDetail {
+  id: number;
   company: string;
   role: string;
   location: string;
   duration: string;
   type: string;
   details: ExperienceDetailItem[];
-  stack: IdName[];
+  experienceStack: Skill[];
 }
 
 export interface ContactPayload {

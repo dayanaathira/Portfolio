@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
+import { Observable, throwError } from "rxjs";
 import { map } from "rxjs/operators";
 import { environment } from "../../environments/environment";
 import {
@@ -60,6 +60,21 @@ export class ApiService {
   }
 
   sendContact(payload: ContactPayload): Observable<any> {
+    const errors = this.validateContact(payload);
+    if (errors.length) return throwError(() => new Error(errors.join(', ')));
     return this.http.post(`${this.base}/contact`, payload);
+  }
+
+  private validateContact(p: ContactPayload): string[] {
+    const errors: string[] = [];
+    if (!p.name || p.name.length < 2 || p.name.length > 100)
+      errors.push('name must be 2–100 characters');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email))
+      errors.push('invalid email');
+    if (!p.subject || p.subject.length < 3 || p.subject.length > 200)
+      errors.push('subject must be 3–200 characters');
+    if (!p.message || p.message.length < 10 || p.message.length > 5000)
+      errors.push('message must be 10–5000 characters');
+    return errors;
   }
 }

@@ -21,7 +21,7 @@
       <div
         *ngFor="let line of motdLines()"
         class="motd-line"
-        [innerHTML]="line"
+        [innerHTML]="line | safeHtml"
       ></div>
     </div>
 
@@ -38,7 +38,7 @@
         <!-- Output line -->
         <div class="output-line"
           *ngIf="line.type === 'output'"
-          [innerHTML]="line.content">
+          [innerHTML]="line.content | safeHtml">
         </div>
 
       </ng-container>
