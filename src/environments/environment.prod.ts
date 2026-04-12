@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://dayana.cloud/test-arkspace/v1',
+  apiUrl: 'https://dayana.cloud/api-arkspace/v1',
 };
