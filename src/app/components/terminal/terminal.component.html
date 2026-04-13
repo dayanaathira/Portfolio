@@ -54,6 +54,7 @@
           class="terminal-input"
           [(ngModel)]="inputValue"
           (keydown.enter)="onEnter()"
+          (keydown.tab)="$event.preventDefault()"
           autocomplete="off"
           autocorrect="off"
           autocapitalize="off"
