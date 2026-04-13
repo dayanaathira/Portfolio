@@ -3,7 +3,9 @@ $font: 'Ubuntu Mono', monospace;
 .terminal {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background: var(--bg);
   font-family: $font;
   cursor: text;
@@ -77,9 +79,12 @@ $font: 'Ubuntu Mono', monospace;
     color: var(--dim);
     line-height: 1.9;
     animation: fadeIn 0.2s ease;
-
+    overflow-x: hidden;
+    text-overflow: ellipsis;
 
     b { color: var(--muted); }
+
+    @media (max-width: 480px) { font-size: 11px; }
   }
 }
 
@@ -219,6 +224,7 @@ $font: 'Ubuntu Mono', monospace;
         border-bottom: 1px solid #111;
         vertical-align: top;
         white-space: nowrap;
+        @media (max-width: 640px) { white-space: normal; }
       }
     }
 

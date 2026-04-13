@@ -43,7 +43,7 @@ export class TerminalService {
       description: "work experience timeline",
       aliases: ["git log --oneline"],
     },
-    { key: "cat <id>", description: "full details for an experience entry" },
+    { key: "cat <company>", description: "full details for a work experience  (e.g. cat tmrnd)" },
     { key: "education", description: "academic background" },
     { key: "contact", description: "get in touch", aliases: ["curl contact"] },
     { key: "clear", description: "clear terminal" },
@@ -97,17 +97,35 @@ export class TerminalService {
     this.dispatch(raw);
   }
 
+  private readonly catAliases: Record<string, number> = {
+    'tmrnd': 1,
+    'epnox': 2,
+  };
+
   private dispatch(raw: string): void {
     const cmd = raw.trim().toLowerCase();
     this.pushInput(raw.trim());
     const catMatch = cmd.match(/^cat\s+(\S+)$/);
     if (catMatch && catMatch[1] !== "stack") {
-      const id = parseInt(catMatch[1], 10);
-      if (isNaN(id) || id < 1 || id > 9999) {
-        this.pushOutput(`<span class="red">invalid id</span><span class="dim"> · id must be a positive integer.</span>`);
+      const token = catMatch[1];
+      const numId = parseInt(token, 10);
+      if (!isNaN(numId)) {
+        if (numId < 1 || numId > 9999) {
+          this.pushOutput(`<span class="red">invalid id</span><span class="dim"> · id must be a positive integer.</span>`);
+          return;
+        }
+        this.cmdCat(numId);
         return;
       }
-      this.cmdCat(id);
+      const aliasId = this.catAliases[token];
+      if (aliasId !== undefined) {
+        this.cmdCat(aliasId);
+        return;
+      }
+      const available = Object.keys(this.catAliases)
+        .map(a => `<span class="grn">${a}</span>`)
+        .join(', ');
+      this.pushOutput(`<span class="red">not found:</span><span class="dim"> · try: </span>${available}`);
       return;
     }
     this.pushOutput(this.resolve(cmd));
@@ -126,12 +144,19 @@ export class TerminalService {
   }
 
   private cmdHelp(): string {
+    const lines = this.COMMANDS
+      .filter(c => !c.key.startsWith('cat <'))
+      .map(c => {
+        const row = `<span class="yel">${c.key.padEnd(18)}</span><span class="dim">→</span> <span class="wht">${c.description}</span>`;
+        if (c.key === 'git log') {
+          const aliases = Object.keys(this.catAliases).join(', ');
+          return row + `<br><span class="dim">${''.padEnd(21)}• </span><span class="yel">cat &lt;${aliases}&gt;</span><span class="dim"> → full details for a work experience</span>`;
+        }
+        return row;
+      });
     return `<div class="t-out">
       <span class="grn">available commands:</span><br><br>
-      ${this.COMMANDS.map(
-        (c) =>
-          `<span class="yel">${c.key.padEnd(18)}</span><span class="dim">→</span> <span class="wht">${c.description}</span>`,
-      ).join("<br>")}
+      ${lines.join("<br>")}
       <br><br><span class="dim">tip: click the shortcuts below to run commands instantly.</span>
       </div>`;
   }

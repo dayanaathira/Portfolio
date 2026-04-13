@@ -25,12 +25,13 @@
   --white: #ffffff;
   --text: #d4d4d4;
   --muted: #888888;
-  --dim: #555555;
+  --dim: #aaaaaa;
   --font: 'Ubuntu Mono', monospace;
 }
 
 html, body {
   height: 100%;
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
