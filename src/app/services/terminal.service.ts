@@ -46,6 +46,7 @@ export class TerminalService {
     { key: "cat <company>", description: "full details for a work experience  (e.g. cat tmrnd)" },
     { key: "education", description: "academic background" },
     { key: "contact", description: "get in touch", aliases: ["curl contact"] },
+    { key: "pdf resume", description: "download my resume" },
     { key: "clear", description: "clear terminal" },
   ];
 
@@ -140,6 +141,7 @@ export class TerminalService {
       return this.cmdGitLog();
     if (cmd === "education") return this.cmdEducation();
     if (cmd === "contact" || cmd === "curl contact") return this.cmdContact();
+    if (cmd === "pdf resume") { this.cmdResume(); return ""; }
     return `<span class="red">command not found:</span> <span class="wht">${cmd}</span><span class="dim"> — type </span><span class="grn">help</span><span class="dim"> for commands.</span>`;
   }
 
@@ -318,8 +320,35 @@ export class TerminalService {
     <span class="dim">→ email   :</span> <span class="blu">${this.esc(p.email)}</span><br>
     <span class="dim">→ github  :</span> <a class="blu" href="${this.esc(p.github)}" target="_blank" rel="noopener noreferrer">${this.esc(p.github)}</a><br>
     <span class="dim">→ linkedin:</span> <a class="blu" href="${this.esc(p.linkedin)}" target="_blank" rel="noopener noreferrer">${this.esc(p.linkedin)}</a><br>
-    <span class="dim">→ phone   :</span> <span class="wht">${this.esc(p.phoneNo)}</span><br>
     </div>`;
+        // <span class="dim">→ phone   :</span> <span class="wht">${this.esc(p.phoneNo)}</span><br>
+  }
+
+  private cmdResume(): void {
+    const pdfPath = 'assets/Dayana Athira - Backend Software Engineer.pdf';
+    this.pushOutput(`<span class="t-loading">opening resume</span>`);
+    fetch(pdfPath)
+      .then(res => {
+        if (!res.ok) throw new Error('not found');
+        return res.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Dayana Athira - Backend Software Engineer.pdf';
+        a.click();
+        URL.revokeObjectURL(url);
+        this.replaceLastOutput(
+          `<span class="grn">✓ resume opened</span><span class="dim"> · check your downloads or the new tab.</span>`
+        );
+      })
+      .catch(() => {
+        this.replaceLastOutput(
+          `<span class="red">error:</span> <span class="dim">could not load resume. please try again later.</span>`
+        );
+      });
   }
 
   private esc(s: string): string {
