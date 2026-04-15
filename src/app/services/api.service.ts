@@ -11,6 +11,7 @@ import {
   ExperienceEntry,
   ExperienceDetail,
   Education,
+  Hobby,
   ContactPayload,
 } from "../models";
 
@@ -56,6 +57,12 @@ export class ApiService {
       .get<
         ApiResponse<Education[]>
       >(`${this.base}/profile/education/${this.userId}`)
+      .pipe(map((r) => r.data));
+  }
+
+  getHobbies(): Observable<Hobby[]> {
+    return this.http
+      .get<ApiResponse<Hobby[]>>(`${this.base}/hobby/${this.userId}`)
       .pipe(map((r) => r.data));
   }
 
