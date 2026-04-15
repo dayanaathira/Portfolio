@@ -23,6 +23,13 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
   motdDone = signal(false);
   showCursor = signal(true);
 
+  showOnboarding = signal(false);
+  demoTyped = signal('');
+  demoOutputVisible = signal(false);
+  demoCursorVisible = signal(true);
+
+  private onboardCursorInterval: any;
+
   private motdFull = [
     `<span style="color:#555">┌──────────────────────────────────────────────────┐</span>`,
     `<span style="color:#555">│</span>  <span style="color:#fff;font-weight:700">Nor Dayana Athira</span>  <span style="color:#555">·</span>  <span style="color:#22c55e">Backend Software Engineer</span>`,
@@ -34,6 +41,7 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
   ];
   private cursorInterval: any;
   private shouldScroll = false;
+  private onboardTypingTimeout: any;
 
   constructor(public terminal: TerminalService) {
     effect(() => {
@@ -48,10 +56,14 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.cursorInterval = setInterval(() => {
       this.showCursor.update(v => !v);
     }, 530);
+    this.showOnboarding.set(true);
+    this.startOnboardDemo();
   }
 
   ngOnDestroy() {
     clearInterval(this.cursorInterval);
+    clearInterval(this.onboardCursorInterval);
+    clearTimeout(this.onboardTypingTimeout);
   }
 
   ngAfterViewChecked() {
@@ -104,6 +116,45 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.focusInput();
   }
 
+/**
+ * Starts an onboarding demo of the terminal.
+ * Types out the command 'whoami' and then displays the output.
+ * The demo is triggered after a 700ms delay.
+ * The typing animation is done by using a timer to update the demoTyped signal.
+ * The output is displayed after a 450ms delay after the typing animation is complete.
+ */
+  private startOnboardDemo() {
+    const cmd = 'whoami';
+    let i = 0;
+    this.onboardCursorInterval = setInterval(() => {
+      this.demoCursorVisible.update(v => !v);
+    }, 530);
+    this.onboardTypingTimeout = setTimeout(() => {
+      const t = setInterval(() => {
+        if (i < cmd.length) {
+          this.demoTyped.update(s => s + cmd[i++]);
+        } else {
+          clearInterval(t);
+          setTimeout(() => this.demoOutputVisible.set(true), 450);
+        }
+      }, 90);
+    }, 700);
+  }
+
+  /**
+   * Dismiss the onboarding popup and reset all related state and timers.
+   * This will clear any ongoing typing animation, hide the output of the demo command,
+   * and focus the input field.
+   */
+  dismissOnboarding() {
+    this.showOnboarding.set(false);
+    clearInterval(this.onboardCursorInterval);
+    clearTimeout(this.onboardTypingTimeout);
+    this.demoTyped.set('');
+    this.demoOutputVisible.set(false);
+    this.focusInput();
+  }
+
   private scrollToBottom() {
     try {
       const el = this.terminalBody.nativeElement;
@@ -120,8 +171,9 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
       { label: 'git log',     cmd: 'git log' },
       { label: 'cat tmrnd',   cmd: 'cat tmrnd' },
       { label: 'cat epnox',   cmd: 'cat epnox' },
-      { label: 'education',   cmd: 'education' },
-      { label: 'contact',     cmd: 'contact' },
+      { label: 'cat education', cmd: 'cat education' },
+      { label: 'cat hobbies',  cmd: 'cat hobbies' },
+      { label: 'cat contact',  cmd: 'cat contact' },
       { label: 'clear',       cmd: 'clear' },
     ];
   }
