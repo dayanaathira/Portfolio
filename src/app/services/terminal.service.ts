@@ -58,6 +58,9 @@ export class TerminalService {
       description: "get in touch",
       aliases: ["curl contact"],
     },
+    { key: "docker ps", description: "running services on my server" },
+    { key: "curl /api/health", description: "live health check of my API" },
+    { key: "cat pipeline", description: "CI/CD pipeline overview" },
     { key: "pdf resume", description: "download my resume" },
     { key: "clear", description: "clear terminal" },
   ];
@@ -81,6 +84,8 @@ export class TerminalService {
     ["cat hobbies", () => this.cmdHobbies()],
     ["cat contact", () => this.cmdContact()],
     ["curl contact", () => this.cmdContact()],
+    ["docker ps",    () => this.cmdDockerPs()],
+    ["cat pipeline", () => this.cmdPipeline()],
     // ── Easter eggs ──────────────────────────────────────────────────────
     ["vim", () => this.eggVim()],
     ["nano", () => this.eggVim()],
@@ -155,8 +160,12 @@ export class TerminalService {
     this.pushInput(raw.trim());
     this.sessionHistory.push(raw.trim());
 
+    // Async commands that manage their own output
+    if (cmd === "pdf resume")        { this.cmdResume();    return; }
+    if (cmd === "curl /api/health")  { this.cmdApiHealth(); return; }
+
     // Named commands (including cat education/hobbies/contact) take priority
-    if (this.commandMap.has(cmd) || cmd === "pdf resume") {
+    if (this.commandMap.has(cmd)) {
       this.pushOutput(this.resolve(cmd));
       return;
     }
@@ -197,11 +206,6 @@ export class TerminalService {
   }
 
   private resolve(cmd: string): string {
-    if (cmd === "pdf resume") {
-      this.cmdResume();
-      return "";
-    }
-
     return (
       this.commandMap.get(cmd)?.() ??
       `<span class="red">command not found:</span> <span class="wht">${cmd}</span><span class="dim"> — type </span><span class="grn">help</span><span class="dim"> for commands.</span>`
@@ -427,6 +431,76 @@ export class TerminalService {
       <span class="dim">→ github  :</span> <a class="blu" href="${this.esc(p.github)}" target="_blank" rel="noopener noreferrer">${this.esc(p.github)}</a><br>
       <span class="dim">→ linkedin:</span> <a class="blu" href="${this.esc(p.linkedin)}" target="_blank" rel="noopener noreferrer">${this.esc(p.linkedin)}</a><br>
     </div>`;
+  }
+
+  private cmdDockerPs(): string {
+    const uptime = (days: number, hrs: number) =>
+      `Up ${days} days, ${hrs} hours`;
+    const row = (id: string, image: string, status: string, ports: string, name: string) =>
+      `<tr>
+        <td class="dim">${id}</td>
+        <td class="wht">${image}</td>
+        <td class="grn">${status}</td>
+        <td class="yel">${ports}</td>
+        <td class="grn">${name}</td>
+      </tr>`;
+    // Update these to match your actual running containers
+    const rows = [
+      row("a1f3c92d", "nginx:alpine",       uptime(14, 3),  "0.0.0.0:80->80, 443->443", "nginx-proxy"),
+      row("b2e4d83c", "node:20-alpine",      uptime(14, 3),  "0.0.0.0:3000->3000",       "arkspace-api"),
+      row("c3f5e74b", "postgres:16-alpine",  uptime(14, 3),  "127.0.0.1:5432->5432",     "postgres-db"),
+    ].join("");
+    return `<div class="t-out" style="margin-bottom:6px">
+  <span class="dim">CONTAINER ID   IMAGE                  STATUS              PORTS                      NAMES</span>
+</div>
+<table class="t-tbl"><tbody>${rows}</tbody></table>`;
+  }
+
+  private cmdApiHealth(): void {
+    this.pushOutput(`<span class="t-loading">curl https://dayana.cloud/api-arkspace/v1/health</span>`);
+    this.api.getHealth().subscribe({
+      next: (data) => {
+        const ts = new Date().toISOString();
+        const pretty = JSON.stringify(data, null, 2)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"([^"]+)":/g, '<span class="yel">"$1"</span>:')
+          .replace(/: "([^"]+)"/g, ': <span class="wht">"$1"</span>')
+          .replace(/: (\d+)/g, ': <span class="blu">$1</span>');
+        this.replaceLastOutput(`<div class="t-out">
+  <span class="dim">HTTP/1.1</span> <span class="grn">200 OK</span>
+  <span class="dim">Content-Type: application/json · ${ts}</span><br>
+  <pre style="margin:6px 0;font-family:inherit;white-space:pre-wrap">${pretty}</pre>
+</div>`);
+      },
+      error: (err) => {
+        const status = err?.status ?? 0;
+        const msg = status === 0
+          ? 'could not reach server'
+          : `HTTP ${status} — ${err?.statusText ?? 'error'}`;
+        this.replaceLastOutput(
+          `<span class="red">curl: (7) ${msg}</span><span class="dim"> · is the API running?</span>`
+        );
+      },
+    });
+  }
+
+  private cmdPipeline(): string {
+    const stage = (icon: string, name: string, detail: string, cls = 'grn') =>
+      `<div class="t-log-row">
+        <span class="${cls}">${icon} ${name}</span>
+        <span class="dim"> → ${detail}</span>
+      </div>`;
+    return `<div class="t-out" style="margin-bottom:6px">
+  <span class="grn" style="font-weight:700">// CI/CD pipeline</span>
+  <span class="dim"> · GitHub Actions → self-hosted server</span>
+</div>
+${stage('▸', 'lint',         'eslint + prettier check')}
+${stage('▸', 'test',         'jest unit tests')}
+${stage('▸', 'build',        'nest build → dist/')}
+${stage('▸', 'docker build', 'build image · tag :latest + :sha')}
+${stage('▸', 'docker push',  'push to GitHub Container Registry (ghcr.io)')}
+${stage('▸', 'deploy',       'SSH → docker pull + docker compose up -d')}
+<div class="t-log-row"><span class="dim">triggered on: push to </span><span class="wht">main</span></div>`;
   }
 
   private cmdResume(): void {

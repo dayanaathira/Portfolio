@@ -1,5 +1,13 @@
 const SVG_ATTRS = `xmlns="http://www.w3.org/2000/svg" width="160" height="100" viewBox="0 0 160 100" style="display:block;margin:8px 0"`;
 
+/**
+ * Generates an SVG string representing a fish.
+ *
+ * The SVG contains a fish made up of several shapes (lines, circles, polygons, etc.)
+ * The fish is animated, with its body and fins moving in a fluid motion.
+ *
+ * @returns {string} An SVG string representing a fish.
+ */
 function fishingSvg(): string {
   return `<svg ${SVG_ATTRS}>
   <defs><style>
@@ -26,6 +34,17 @@ function fishingSvg(): string {
 </svg>`;
 }
 
+/**
+ * Generates an SVG string representing a farm.
+ *
+ * The SVG contains several plants, as well as a sun and a line
+ * representing the ground.
+ *
+ * The plants are animated, with their stems and leaves moving
+ * in a fluid motion.
+ *
+ * @returns {string} An SVG string representing a farm.
+ */
 function farmingSvg(): string {
   const esc = (v: number) => v.toString();
   const plants = [{ x: 18, h: 19 }, { x: 43, h: 24 }, { x: 80, h: 30 }, { x: 117, h: 24 }, { x: 142, h: 19 }]
@@ -55,6 +74,15 @@ function farmingSvg(): string {
 </svg>`;
 }
 
+/**
+ * Returns a generic SVG string representing a hobby.
+ *
+ * The SVG contains three circles (outer, middle, inner) and two lines (vertical, horizontal).
+ * The circles and lines are animated, with their radius, opacity, and transform
+ * changing in a fluid motion.
+ *
+ * @returns {string} A generic SVG string representing a hobby.
+ */
 function genericSvg(): string {
   return `<svg ${SVG_ATTRS}>
   <circle cx="80" cy="50" r="28" fill="none" stroke="#22c55e" stroke-width="1" opacity="0.3"><animate attributeName="r" dur="2.5s" repeatCount="indefinite" values="28;36;28"/><animate attributeName="opacity" dur="2.5s" repeatCount="indefinite" values="0.3;0.05;0.3"/></circle>

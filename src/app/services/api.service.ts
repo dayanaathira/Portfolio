@@ -66,6 +66,10 @@ export class ApiService {
       .pipe(map((r) => r.data));
   }
 
+  getHealth(): Observable<any> {
+    return this.http.get<any>(`${this.base}/health`);
+  }
+
   sendContact(payload: ContactPayload): Observable<any> {
     const errors = this.validateContact(payload);
     if (errors.length) return throwError(() => new Error(errors.join(', ')));
