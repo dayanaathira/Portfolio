@@ -27,6 +27,7 @@ export class TerminalService {
   private hobbies: Hobby[] = [];
   private dataLoaded = false;
   private pendingQueue: string[] = [];
+  private sessionHistory: string[] = [];
 
   readonly COMMANDS: Command[] = [
     { key: "help", description: "show available commands" },
@@ -52,7 +53,11 @@ export class TerminalService {
     },
     { key: "cat education", description: "academic background" },
     { key: "cat hobbies", description: "life outside the terminal" },
-    { key: "cat contact", description: "get in touch", aliases: ["curl contact"] },
+    {
+      key: "cat contact",
+      description: "get in touch",
+      aliases: ["curl contact"],
+    },
     { key: "pdf resume", description: "download my resume" },
     { key: "clear", description: "clear terminal" },
   ];
@@ -76,6 +81,22 @@ export class TerminalService {
     ["cat hobbies", () => this.cmdHobbies()],
     ["cat contact", () => this.cmdContact()],
     ["curl contact", () => this.cmdContact()],
+    // ── Easter eggs ──────────────────────────────────────────────────────
+    ["vim", () => this.eggVim()],
+    ["nano", () => this.eggVim()],
+    [":q", () => this.eggVimExit()],
+    [":q!", () => this.eggVimExit()],
+    [":wq", () => this.eggVimExit()],
+    ["exit", () => this.eggExit()],
+    ["quit", () => this.eggExit()],
+    ["pwd", () => this.eggPwd()],
+    ["ls -la", () => this.eggLsLa()],
+    ["git status", () => this.eggGitStatus()],
+    ["git push", () => this.eggGitPush()],
+    ["git pull", () => this.eggGitPull()],
+    ["history", () => this.eggHistory()],
+    ["npm install", () => this.eggNpm()],
+    ["npm i", () => this.eggNpm()],
   ]);
 
   constructor(private api: ApiService) {
@@ -132,10 +153,36 @@ export class TerminalService {
   private dispatch(raw: string): void {
     const cmd = raw.trim().toLowerCase();
     this.pushInput(raw.trim());
+    this.sessionHistory.push(raw.trim());
 
     // Named commands (including cat education/hobbies/contact) take priority
     if (this.commandMap.has(cmd) || cmd === "pdf resume") {
       this.pushOutput(this.resolve(cmd));
+      return;
+    }
+
+    // Pattern: sudo <anything>
+    if (cmd === "sudo" || cmd.startsWith("sudo ")) {
+      this.pushOutput(this.eggSudo(cmd));
+      return;
+    }
+
+    // Pattern: rm <anything>
+    if (cmd.startsWith("rm ")) {
+      this.pushOutput(this.eggRm());
+      return;
+    }
+
+    // Pattern: ping <target>
+    const pingMatch = cmd.match(/^ping\s+(\S+)$/);
+    if (pingMatch) {
+      this.pushOutput(this.eggPing(pingMatch[1]));
+      return;
+    }
+
+    // Pattern: cd <anything>
+    if (cmd === "cd" || cmd.startsWith("cd ")) {
+      this.pushOutput(this.eggCd());
       return;
     }
 
@@ -407,6 +454,98 @@ export class TerminalService {
           `<span class="red">error:</span> <span class="dim">could not load resume. please try again later.</span>`,
         ),
       );
+  }
+
+  // ── XXXX XXX ─────────────────────────────────────────────────────────
+
+  private eggSudo(cmd: string): string {
+    const subcmd = cmd.replace(/^sudo\s*/, "").trim();
+    if (subcmd === "rm -rf /" || subcmd === "rm -rf *") return this.eggRm();
+    return `<span class="red">sudo: permission denied.</span> <span class="dim">Nice try though.</span>`;
+  }
+
+  private eggVim(): string {
+    return `<span class="dim">Entering vim...</span> <span class="wht">wait, how do I exit this thing?</span><br><span class="dim">hint: type </span><span class="grn">:q!</span><span class="dim"> to escape (or so they say)</span>`;
+  }
+
+  private eggVimExit(): string {
+    return `<span class="grn">✓</span> <span class="dim">Escaped vim. You are one of the few.</span>`;
+  }
+
+  private eggExit(): string {
+    return `<span class="dim">There is no escape. You are here forever.</span>`;
+  }
+
+  private eggPwd(): string {
+    return `<span class="wht">/home/dayana/portfolio</span>`;
+  }
+
+  private eggCd(): string {
+    return `<span class="dim">You are already home. There is nowhere else to go.</span>`;
+  }
+
+  private eggRm(): string {
+    return `<span class="red">rm: permission denied.</span> <span class="dim">This portfolio took too long to build.</span>`;
+  }
+
+  private eggLsLa(): string {
+    const row = (perms: string, name: string, cls: string) =>
+      `<span class="dim">${perms}</span>  <span class="grn">dayana</span>  <span class="${cls}">${name}</span>`;
+    return `<div class="t-out">
+  <span class="dim">total 42</span><br>
+  ${row("drwxr-xr-x", "portfolio/", "wht")}<br>
+  ${row("drwxr-xr-x", "projects/", "wht")}<br>
+  ${row("drwxr-xr-x", "experience/", "wht")}<br>
+  ${row("drwxr-xr-x", "stack/", "wht")}<br>
+  ${row("-rw-r--r--", "resume.pdf", "yel")}<br>
+  ${row("-rw-r--r--", "hobbies.txt", "wht")}<br>
+  ${row("-rwxr-xr-x", "life.sh", "grn")}
+</div>`;
+  }
+
+  private eggGitStatus(): string {
+    return `<div class="t-out">
+  <span class="grn">On branch</span> <span class="wht">main</span><br>
+  <span class="dim">Your branch is up to date with 'origin/main'.</span><br><br>
+  <span class="grn">nothing to commit, working tree clean</span><br>
+  <span class="dim">(but always something to learn)</span>
+</div>`;
+  }
+
+  private eggGitPush(): string {
+    return `<span class="dim">Pushing to origin/main...</span><br><span class="grn">✓</span> <span class="wht">Already up to date.</span> <span class="dim">This portfolio ships continuously.</span>`;
+  }
+
+  private eggGitPull(): string {
+    return `<span class="dim">remote: Counting objects...</span><br><span class="grn">✓</span> <span class="wht">Already up to date.</span> <span class="dim">You cannot pull what is already perfect.</span>`;
+  }
+
+  private eggPing(target: string): string {
+    const t = this.esc(target);
+    return `<div class="t-out">
+  <span class="dim">PING ${t} — 56 bytes of data</span><br>
+  <span class="grn">64 bytes from ${t}: icmp_seq=1 ttl=64 time=0.1 ms</span><br>
+  <span class="grn">64 bytes from ${t}: icmp_seq=2 ttl=64 time=0.1 ms</span><br>
+  <span class="grn">64 bytes from ${t}: icmp_seq=3 ttl=64 time=0.1 ms</span><br>
+  <span class="dim">--- ${t} ping statistics ---</span><br>
+  <span class="wht">3 packets transmitted, 3 received, 0% packet loss</span>
+</div>`;
+  }
+
+  private eggHistory(): string {
+    if (!this.sessionHistory.length)
+      return `<span class="dim">no commands in history yet.</span>`;
+    const rows = this.sessionHistory
+      .map(
+        (c, i) =>
+          `  <span class="dim">${String(i + 1).padStart(3)}</span>  <span class="wht">${this.esc(c)}</span>`,
+      )
+      .join("<br>");
+    return `<div class="t-out">${rows}</div>`;
+  }
+
+  private eggNpm(): string {
+    return `<span class="dim">npm warn deprecated everything@∞.0.0</span><br><span class="dim">added 847 packages in </span><span class="wht">3 years</span>`;
   }
 
   // ── Helpers ─────────────────────────────────────────────────────────────
