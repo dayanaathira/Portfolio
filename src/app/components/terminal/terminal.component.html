@@ -75,4 +75,47 @@
     >{{ s.label }}</button>
   </div>
 
+  <!-- Onboarding popup -->
+  @if (showOnboarding()) {
+  <div class="onboard-overlay" (click)="dismissOnboarding()">
+    <div class="onboard-card" (click)="$event.stopPropagation()">
+
+      <div class="onboard-title">Welcome to my portfolio</div>
+      <div class="onboard-sub">This is an interactive terminal. Here's how to explore it:</div>
+
+      <!-- Animated demo -->
+      <div class="onboard-demo">
+        <div class="demo-prompt">
+          <span class="ps-user">dayana</span><span class="ps-at">&#64;</span><span class="ps-host">portfolio</span><span class="ps-colon">:</span><span class="ps-path">~</span><span class="ps-dollar">$&nbsp;</span>
+          <span class="demo-text">{{ demoTyped() }}</span><span class="demo-cur" [class.visible]="demoCursorVisible()"></span>
+        </div>
+        @if (demoOutputVisible()) {
+        <div class="demo-output">
+          <div class="demo-out-name">Nor Dayana Athira</div>
+          <div class="demo-out-role">Backend Software Engineer &middot; TM R&amp;D &middot; Cyberjaya</div>
+        </div>
+        }
+      </div>
+
+      <!-- Tips -->
+      <div class="onboard-tips">
+        <div class="onboard-tip">
+          <span class="tip-icon grn">$</span>
+          <span>Type any command in the input below</span>
+        </div>
+        <div class="onboard-tip">
+          <span class="tip-icon blu">&#8629;</span>
+          <span>Press <kbd>Enter</kbd> to run it</span>
+        </div>
+        <div class="onboard-tip">
+          <span class="tip-icon yel">&#9654;</span>
+          <span>Or click a shortcut button to explore quickly</span>
+        </div>
+      </div>
+
+      <button class="onboard-btn" (click)="dismissOnboarding()">Let me try!</button>
+    </div>
+  </div>
+  }
+
 </div>

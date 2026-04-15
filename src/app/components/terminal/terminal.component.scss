@@ -9,6 +9,7 @@ $font: 'Ubuntu Mono', monospace;
   background: var(--bg);
   font-family: $font;
   cursor: text;
+  position: relative;
 }
 
 // ── Title bar ──────────────────────────────────────────────────────────
@@ -34,9 +35,18 @@ $font: 'Ubuntu Mono', monospace;
     height: 13px;
     border-radius: 50%;
     display: inline-block;
-    &-red    { background: #ff5f57; }
-    &-yellow { background: #febc2e; }
-    &-green  { background: #28c840; }
+
+    &-red {
+      background: #ff5f57;
+    }
+
+    &-yellow {
+      background: #febc2e;
+    }
+
+    &-green {
+      background: #28c840;
+    }
   }
 
   .title {
@@ -50,7 +60,9 @@ $font: 'Ubuntu Mono', monospace;
     font-size: 11px;
     color: var(--dim);
 
-    @media (max-width: 480px) { display: none; }
+    @media (max-width: 480px) {
+      display: none;
+    }
   }
 }
 
@@ -82,23 +94,48 @@ $font: 'Ubuntu Mono', monospace;
     overflow-x: hidden;
     text-overflow: ellipsis;
 
-    b { color: var(--muted); }
+    b {
+      color: var(--muted);
+    }
 
-    @media (max-width: 480px) { font-size: 11px; }
+    @media (max-width: 480px) {
+      font-size: 11px;
+    }
   }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(2px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes loadingDots {
-  0%   { content: ''; }
-  25%  { content: '.'; }
-  50%  { content: '..'; }
-  75%  { content: '...'; }
-  100% { content: ''; }
+  0% {
+    content: '';
+  }
+
+  25% {
+    content: '.';
+  }
+
+  50% {
+    content: '..';
+  }
+
+  75% {
+    content: '...';
+  }
+
+  100% {
+    content: '';
+  }
 }
 
 // ── History ────────────────────────────────────────────────────────────
@@ -118,16 +155,42 @@ $font: 'Ubuntu Mono', monospace;
   font-size: 13px;
   line-height: 1.7;
 
-  @media (max-width: 640px) { font-size: 12px; }
+  @media (max-width: 640px) {
+    font-size: 12px;
+  }
 }
 
-.ps-user   { color: var(--green); font-weight: 700; }
-.ps-at     { color: var(--white); }
-.ps-host   { color: var(--green); font-weight: 700; }
-.ps-colon  { color: var(--white); }
-.ps-path   { color: var(--blue); font-weight: 700; }
-.ps-dollar { color: var(--white); }
-.cmd-text  { color: var(--white); margin-left: 4px; }
+.ps-user {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.ps-at {
+  color: var(--white);
+}
+
+.ps-host {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.ps-colon {
+  color: var(--white);
+}
+
+.ps-path {
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.ps-dollar {
+  color: var(--white);
+}
+
+.cmd-text {
+  color: var(--white);
+  margin-left: 4px;
+}
 
 // ── Output line ────────────────────────────────────────────────────────
 .output-line {
@@ -150,7 +213,10 @@ $font: 'Ubuntu Mono', monospace;
       font-size: 13px;
       line-height: 1.85;
       color: var(--text);
-      @media (max-width: 640px) { font-size: 12px; }
+
+      @media (max-width: 640px) {
+        font-size: 12px;
+      }
     }
 
     .t-box {
@@ -160,7 +226,10 @@ $font: 'Ubuntu Mono', monospace;
       margin: 6px 0 4px;
       display: grid;
       gap: 5px;
-      @media (max-width: 640px) { padding: 10px 12px; }
+
+      @media (max-width: 640px) {
+        padding: 10px 12px;
+      }
     }
 
     .t-row {
@@ -168,14 +237,20 @@ $font: 'Ubuntu Mono', monospace;
       gap: 8px;
       font-size: 13px;
       flex-wrap: wrap;
-      @media (max-width: 640px) { font-size: 12px; }
+
+      @media (max-width: 640px) {
+        font-size: 12px;
+      }
     }
 
     .t-k {
       color: var(--dim);
       min-width: 140px;
       flex-shrink: 0;
-      @media (max-width: 640px) { min-width: 110px; }
+
+      @media (max-width: 640px) {
+        min-width: 110px;
+      }
     }
 
     .t-section-hdr {
@@ -224,14 +299,21 @@ $font: 'Ubuntu Mono', monospace;
         border-bottom: 1px solid #111;
         vertical-align: top;
         white-space: nowrap;
-        @media (max-width: 640px) { white-space: normal; }
+
+        @media (max-width: 640px) {
+          white-space: normal;
+        }
       }
     }
 
     .t-log-row {
       font-size: 13px;
       line-height: 2.1;
-      @media (max-width: 640px) { font-size: 11px; line-height: 1.9; }
+
+      @media (max-width: 640px) {
+        font-size: 11px;
+        line-height: 1.9;
+      }
     }
 
     .t-bar-row {
@@ -244,7 +326,11 @@ $font: 'Ubuntu Mono', monospace;
       .t-bar-label {
         min-width: 108px;
         font-size: 13px;
-        @media (max-width: 640px) { min-width: 90px; font-size: 12px; }
+
+        @media (max-width: 640px) {
+          min-width: 90px;
+          font-size: 12px;
+        }
       }
 
       .t-bar-track {
@@ -278,18 +364,54 @@ $font: 'Ubuntu Mono', monospace;
       font-size: 11px;
       margin: 1px 2px;
 
-      &.pg { background: #052e16; color: #22c55e; border: 1px solid #166534; }
-      &.pb { background: #0c1a3a; color: #60a5fa; border: 1px solid #1e3a6e; }
-      &.py { background: #1a1200; color: #facc15; border: 1px solid #3a2800; }
-      &.pm { background: #111;    color: #666;    border: 1px solid #2a2a2a; }
+      &.pg {
+        background: #052e16;
+        color: #22c55e;
+        border: 1px solid #166534;
+      }
+
+      &.pb {
+        background: #0c1a3a;
+        color: #60a5fa;
+        border: 1px solid #1e3a6e;
+      }
+
+      &.py {
+        background: #1a1200;
+        color: #facc15;
+        border: 1px solid #3a2800;
+      }
+
+      &.pm {
+        background: #111;
+        color: #666;
+        border: 1px solid #2a2a2a;
+      }
     }
 
-    .grn { color: #22c55e; }
-    .blu { color: #60a5fa; }
-    .yel { color: #facc15; }
-    .red { color: #f87171; }
-    .wht { color: #ffffff; }
-    .dim { color: #555555; }
+    .grn {
+      color: #22c55e;
+    }
+
+    .blu {
+      color: #60a5fa;
+    }
+
+    .yel {
+      color: #facc15;
+    }
+
+    .red {
+      color: #f87171;
+    }
+
+    .wht {
+      color: #ffffff;
+    }
+
+    .dim {
+      color: #555555;
+    }
   }
 }
 
@@ -302,7 +424,9 @@ $font: 'Ubuntu Mono', monospace;
   font-size: 13px;
   flex-wrap: nowrap;
 
-  @media (max-width: 640px) { font-size: 12px; }
+  @media (max-width: 640px) {
+    font-size: 12px;
+  }
 }
 
 .input-inner {
@@ -328,7 +452,9 @@ $font: 'Ubuntu Mono', monospace;
     display: inline-block;
   }
 
-  @media (max-width: 640px) { font-size: 12px; }
+  @media (max-width: 640px) {
+    font-size: 12px;
+  }
 }
 
 .terminal-input {
@@ -344,8 +470,13 @@ $font: 'Ubuntu Mono', monospace;
   caret-color: transparent;
   min-width: 0;
 
-  &::placeholder { color: var(--dim); }
-  @media (max-width: 640px) { font-size: 12px; }
+  &::placeholder {
+    color: var(--dim);
+  }
+
+  @media (max-width: 640px) {
+    font-size: 12px;
+  }
 }
 
 .cursor {
@@ -357,7 +488,9 @@ $font: 'Ubuntu Mono', monospace;
   opacity: 0;
   transition: opacity 0.1s;
 
-  &.visible { opacity: 1; }
+  &.visible {
+    opacity: 1;
+  }
 }
 
 // ── Shortcuts ──────────────────────────────────────────────────────────
@@ -398,5 +531,170 @@ $font: 'Ubuntu Mono', monospace;
   @media (max-width: 640px) {
     font-size: 10px;
     padding: 3px 8px;
+  }
+}
+
+// ── Onboarding overlay ─────────────────────────────────────────────────
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.onboard-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.25s ease;
+}
+
+.onboard-card {
+  background: #0f0f0f;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 28px 30px 24px;
+  max-width: 460px;
+  width: calc(100% - 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: slideUp 0.3s ease;
+  cursor: default;
+
+  @media (max-width: 480px) {
+    padding: 20px 18px 18px;
+    gap: 14px;
+  }
+}
+
+.onboard-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+}
+
+.onboard-sub {
+  font-size: 12px;
+  color: var(--dim);
+  margin-top: -10px;
+}
+
+// ── Demo terminal ──────────────────────────────────────────────────────
+.onboard-demo {
+  background: #070707;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 56px;
+}
+
+.demo-prompt {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  flex-wrap: nowrap;
+
+  @media (max-width: 480px) { font-size: 12px; }
+}
+
+.demo-text {
+  color: var(--white);
+}
+
+.demo-cur {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: var(--white);
+  vertical-align: middle;
+  opacity: 0;
+  transition: opacity 0.1s;
+
+  &.visible { opacity: 1; }
+}
+
+.demo-output {
+  padding-left: 2px;
+  animation: fadeIn 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.demo-out-name {
+  font-size: 13px;
+  color: #22c55e;
+  font-weight: 700;
+
+  @media (max-width: 480px) { font-size: 12px; }
+}
+
+.demo-out-role {
+  font-size: 12px;
+  color: var(--dim);
+
+  @media (max-width: 480px) { font-size: 11px; }
+}
+
+// ── Tips ───────────────────────────────────────────────────────────────
+.onboard-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.onboard-tip {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+
+  kbd {
+    font-family: $font;
+    font-size: 11px;
+    padding: 1px 5px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 3px;
+    color: var(--white);
+  }
+}
+
+.tip-icon {
+  font-size: 13px;
+  width: 16px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+// ── CTA button ─────────────────────────────────────────────────────────
+.onboard-btn {
+  font-family: $font;
+  font-size: 12px;
+  padding: 8px 20px;
+  border: 1px solid var(--green);
+  border-radius: 3px;
+  color: var(--green);
+  background: transparent;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--green);
+    color: #000;
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }
