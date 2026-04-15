@@ -54,6 +54,11 @@ export class TerminalService {
     this.loadData();
   }
 
+/**
+ * Load all necessary data from the API.
+ * When all data is loaded, set `dataLoaded` to `true` and dispatch all commands in the `pendingQueue`.
+ * If an error occurs, push an error message to the output and clear the `pendingQueue`.
+ */
   private loadData() {
     forkJoin({
       profile: this.api.getProfile(),
@@ -81,6 +86,14 @@ export class TerminalService {
     });
   }
 
+  /**
+   * Process a command from the user.
+   * If the command is empty, do nothing.
+   * If the command is "clear", clear the terminal.
+   * If the data has not been loaded yet, add the command to a pending queue.
+   * Otherwise, dispatch the command to be executed.
+   * @param raw the command from the user
+   */
   run(raw: string): void {
     const cmd = raw.trim().toLowerCase();
     if (!cmd) return;
@@ -103,6 +116,16 @@ export class TerminalService {
     'epnox': 2,
   };
 
+  /**
+   * Dispatch a command to be executed.
+   * If the command is "clear", clear the terminal.
+   * If the command is "cat <company>", fetch the full details of a work experience.
+   * If the command is "cat stack", show the tech stack and skill levels.
+   * If the command is "git log", show the work experience timeline.
+   * If the command is "cat <id>", fetch the full details of a work experience.
+   * If the command is not recognized, push an error message to the output.
+   * @param raw the command from the user
+   */
   private dispatch(raw: string): void {
     const cmd = raw.trim().toLowerCase();
     this.pushInput(raw.trim());
@@ -132,6 +155,12 @@ export class TerminalService {
     this.pushOutput(this.resolve(cmd));
   }
 
+/**
+ * Resolve a command to its corresponding output string.
+ * If the command is not recognized, return an error message.
+ * @param cmd the command from the user
+ * @returns the output string for the command
+ */
   private resolve(cmd: string): string {
     if (cmd === "help") return this.cmdHelp();
     if (cmd === "whoami") return this.cmdWhoami();
@@ -145,6 +174,10 @@ export class TerminalService {
     return `<span class="red">command not found:</span> <span class="wht">${cmd}</span><span class="dim"> — type </span><span class="grn">help</span><span class="dim"> for commands.</span>`;
   }
 
+/**
+ * Returns a string containing a list of available commands and their descriptions.
+ * @returns a string containing the list of available commands
+ */
   private cmdHelp(): string {
     const lines = this.COMMANDS
       .filter(c => !c.key.startsWith('cat <'))
@@ -163,6 +196,10 @@ export class TerminalService {
       </div>`;
   }
 
+/**
+ * Returns a string containing information about the user.
+ * @returns a string containing the user's name, role, years of experience, location, status, and stack
+ */
   private cmdWhoami(): string {
     if (!this.profile) return this.errNoData();
     const p = this.profile;
@@ -179,6 +216,12 @@ export class TerminalService {
       </div>`;
   }
 
+/**
+ * Returns a string containing a list of all projects the user has worked on.
+ * Each project is represented as a row in a table, with columns for the project name, stack, impact, and status.
+ * The projects are sorted by impact (highest to lowest).
+ * @returns a string containing the list of all projects
+ */
   private cmdProjects(): string {
     if (!this.projects.length) return this.errNoData();
     const rows = this.projects
@@ -202,6 +245,12 @@ export class TerminalService {
         </table>`;
   }
 
+  /**
+   * Returns a string containing a list of all skills the user has, grouped by category.
+   * Each category is represented as a section with a header and a list of skills.
+   * The skills are represented as pills, with colors indicating the proficiency level.
+   * @returns a string containing the list of all skills
+   */
   private cmdStack(): string {
     if (!this.stack.length) return this.errNoData();
     const grouped = this.stack.reduce<Record<string, typeof this.stack>>(
@@ -231,6 +280,12 @@ export class TerminalService {
     return `<div class="t-out" style="margin-bottom:8px"><span class="grn">skills · by category</span></div>${sections}`;
   }
 
+  /**
+   * Returns a string containing a list of all work experiences, in a format similar to a git log.
+   * Each work experience is represented as a row, with the id, role, company, duration, and type.
+   * The tip at the end of the output suggests using the "cat <id>" command to read full details for a work experience.
+   * @returns a string containing the list of all work experiences
+   */
   private cmdGitLog(): string {
     if (!this.experience.length) return this.errNoData();
     const lines = this.experience
@@ -252,6 +307,13 @@ export class TerminalService {
     </div>`;
   }
 
+/**
+ * Fetches the full details of a work experience by id.
+ * If the id is invalid, prints an error message with available ids.
+ * If the id is valid, prints the full details of the work experience.
+ * The full details include role, company, location, duration, type, and stack used.
+ * @param id the id of the work experience to fetch
+ */
   private cmdCat(id: number): void {
     if (isNaN(id)) {
       const ids = this.experience
@@ -298,6 +360,11 @@ export class TerminalService {
     });
   }
 
+/**
+ * Returns a string containing a list of all education backgrounds the user has, in a format similar to a table.
+ * Each education background is represented as a row, with the degree, field of study, institution, and period.
+ * @returns a string containing the list of all education backgrounds
+ */
   private cmdEducation(): string {
     if (!this.education?.length) return this.errNoData();
     return this.education
@@ -312,6 +379,11 @@ export class TerminalService {
       .join("");
   }
 
+  /**
+   * Returns a string containing contact information for the user.
+   * The contact information includes an email address, a github profile, and a linkedin profile.
+   * @returns a string containing the contact information
+   */
   private cmdContact(): string {
     if (!this.profile) return this.errNoData();
     const p = this.profile;
@@ -324,6 +396,11 @@ export class TerminalService {
         // <span class="dim">→ phone   :</span> <span class="wht">${this.esc(p.phoneNo)}</span><br>
   }
 
+  /**
+   * Opens the user's resume in a new tab.
+   * If the resume is not found, prints an error message.
+   * If the resume is found, opens it in a new tab and prints a success message.
+   */
   private cmdResume(): void {
     const pdfPath = 'assets/Dayana Athira - Backend Software Engineer.pdf';
     this.pushOutput(`<span class="t-loading">opening resume</span>`);
@@ -372,6 +449,11 @@ export class TerminalService {
     this.scrollTick.update((n) => n + 1);
   }
 
+  /**
+   * Replaces the last output message with a new one.
+   * If no output message is found, does nothing.
+   * @param html the new output message to replace the last one with
+   */
   private replaceLastOutput(html: string) {
     this.lines.update((l) => {
       const updated = [...l];
