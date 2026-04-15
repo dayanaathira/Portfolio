@@ -75,6 +75,12 @@ export interface ExperienceDetail {
   experienceStack: Skill[];
 }
 
+export interface Hobby {
+  id: number;
+  category: { id: number; name: string };
+  description: string;
+}
+
 export interface ContactPayload {
   name: string;
   email: string;
