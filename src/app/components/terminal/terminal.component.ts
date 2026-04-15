@@ -8,11 +8,10 @@ import { TerminalService } from '../../services/terminal.service';
 import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
 
 @Component({
-  selector: 'app-terminal',
-  standalone: true,
-  imports: [CommonModule, FormsModule, SafeHtmlPipe],
-  templateUrl: './terminal.component.html',
-  styleUrl: './terminal.component.scss'
+    selector: 'app-terminal',
+    imports: [CommonModule, FormsModule, SafeHtmlPipe],
+    templateUrl: './terminal.component.html',
+    styleUrl: './terminal.component.scss'
 })
 export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('terminalBody') terminalBody!: ElementRef;
