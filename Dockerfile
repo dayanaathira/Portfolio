@@ -4,7 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build:prod
+ARG BUILD_CONFIG=production
+RUN npx ng build --configuration=${BUILD_CONFIG} --base-href /
 
 # Stage 2 — serve with nginx
 FROM nginx:alpine
