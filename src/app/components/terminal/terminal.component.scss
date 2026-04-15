@@ -116,6 +116,13 @@ $font: 'Ubuntu Mono', monospace;
   }
 }
 
+@keyframes t-bob   { 0%,100% { transform: translateY(0);    } 50% { transform: translateY(3px);   } }
+@keyframes t-swim1 { 0%,100% { transform: translateX(0);    } 50% { transform: translateX(16px);  } }
+@keyframes t-swim2 { 0%,100% { transform: translateX(0);    } 50% { transform: translateX(-12px); } }
+@keyframes t-wave  { 0%,100% { transform: translateX(0);    } 50% { transform: translateX(-4px);  } }
+@keyframes t-sway  { 0%,100% { transform: skewX(0deg);      } 50% { transform: skewX(3deg);       } }
+@keyframes t-sun   { 0%,100% { opacity: 0.6;                } 50% { opacity: 1;                   } }
+
 @keyframes loadingDots {
   0% {
     content: '';

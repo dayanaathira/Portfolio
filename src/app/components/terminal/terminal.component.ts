@@ -171,8 +171,9 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
       { label: 'git log',     cmd: 'git log' },
       { label: 'cat tmrnd',   cmd: 'cat tmrnd' },
       { label: 'cat epnox',   cmd: 'cat epnox' },
-      { label: 'education',   cmd: 'education' },
-      { label: 'contact',     cmd: 'contact' },
+      { label: 'cat education', cmd: 'cat education' },
+      { label: 'cat hobbies',  cmd: 'cat hobbies' },
+      { label: 'cat contact',  cmd: 'cat contact' },
       { label: 'clear',       cmd: 'clear' },
     ];
   }
