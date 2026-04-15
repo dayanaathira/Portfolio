@@ -20,10 +20,22 @@
             "outputPath": "dist/portfolio-angular",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": ["zone.js"],
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "tsconfig.json",
-            "assets": ["src/favicon.ico", "src/assets"],
-            "styles": ["src/styles.scss"],
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "assets",
+                "output": "assets"
+              }
+            ],
+            "styles": [
+              "src/styles.scss"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -57,8 +69,12 @@
             "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
-            "production": { "buildTarget": "portfolio-angular:build:production" },
-            "development": { "buildTarget": "portfolio-angular:build:development" }
+            "production": {
+              "buildTarget": "portfolio-angular:build:production"
+            },
+            "development": {
+              "buildTarget": "portfolio-angular:build:development"
+            }
           },
           "defaultConfiguration": "development"
         }
