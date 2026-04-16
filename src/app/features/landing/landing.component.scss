@@ -179,11 +179,7 @@ $text:     #94a3b8;
     color: $dim;
     border-color: rgba($dim, 0.2);
     cursor: default;
-
-    &:hover {
-      color: $dim;
-      border-color: rgba($dim, 0.2);
-    }
+    &:hover { color: $dim; border-color: rgba($dim, 0.2); }
   }
 }
 
@@ -228,6 +224,7 @@ $text:     #94a3b8;
   letter-spacing: 0.5px;
   cursor: pointer;
   transition: color 0.2s;
+  white-space: nowrap;
 
   &:hover { color: $white; }
 }
@@ -246,6 +243,134 @@ $text:     #94a3b8;
   background-size: 400px 100%;
   animation: shimmer 1.4s ease-in-out infinite;
   margin: 0 auto;
+}
+
+// ── Now section ──────────────────────────────────────────────────────────────
+.now-section {
+  background: $bg2;
+  border-top: 1px solid rgba($dim, 0.15);
+  border-bottom: 1px solid rgba($dim, 0.15);
+  padding: 64px 24px;
+}
+
+.now-inner {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.now-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.now-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: $green;
+  letter-spacing: 1px;
+}
+
+.now-sub {
+  font-size: 12px;
+  color: $dim;
+  letter-spacing: 0.5px;
+}
+
+.now-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.now-card {
+  background: rgba($bg, 0.6);
+  border: 1px solid rgba($dim, 0.2);
+  border-radius: 6px;
+  padding: 20px;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: rgba($green, 0.3); }
+
+  &--active {
+    border-color: rgba($green, 0.25);
+    background: rgba($green, 0.03);
+  }
+}
+
+.now-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.now-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: $white;
+  letter-spacing: 0.2px;
+}
+
+.now-card-desc {
+  font-size: 12px;
+  color: $text;
+  line-height: 1.65;
+  margin: 0 0 14px;
+}
+
+.now-card-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  span {
+    font-size: 11px;
+    color: $dim;
+    background: rgba($dim, 0.08);
+    border: 1px solid rgba($dim, 0.15);
+    border-radius: 3px;
+    padding: 2px 8px;
+    letter-spacing: 0.3px;
+  }
+}
+
+.now-continue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 40px;
+  color: $text;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover { color: $white; }
+}
+
+.now-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 3px;
+  flex-shrink: 0;
+
+  &--building {
+    background: rgba($green, 0.12);
+    color: $green;
+    border: 1px solid rgba($green, 0.3);
+  }
+
+  &--planned {
+    background: rgba($yellow, 0.08);
+    color: $yellow;
+    border: 1px solid rgba($yellow, 0.2);
+  }
 }
 
 // ── Terminal section ─────────────────────────────────────────────────────────

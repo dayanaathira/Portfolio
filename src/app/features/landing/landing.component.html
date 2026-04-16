@@ -7,8 +7,8 @@
       <div><span class="logo">dayana<span class="logo-dot">.cloud</span></span></div>
       <div class="nav-links">
         @if (profile(); as p) {
-          <a [href]="p.github" target="_blank" rel="noopener noreferrer" class="nav-link">GitHub</a>
-          <a [href]="p.linkedin" target="_blank" rel="noopener noreferrer" class="nav-link">LinkedIn</a>
+        <a [href]="p.github" target="_blank" rel="noopener noreferrer" class="nav-link">GitHub</a>
+        <a [href]="p.linkedin" target="_blank" rel="noopener noreferrer" class="nav-link">LinkedIn</a>
         }
       </div>
     </nav>
@@ -16,40 +16,99 @@
     <div class="hero-body">
       @if (profile(); as p) {
 
-        <div class="status-badge">
-          <span class="status-dot"></span>
-          {{ p.status.name }}
-        </div>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        {{ p.status.name }}
+      </div>
 
-        <h1 class="name">{{ p.name }}</h1>
-        <h2 class="role">{{ p.role }}</h2>
-        <p class="meta">TM Research &amp; Development &nbsp;·&nbsp; {{ p.location }}</p>
+      <h1 class="name">{{ p.name }}</h1>
+      <h2 class="role">{{ p.role }}</h2>
+      <p class="meta">TM Research &amp; Development &nbsp;·&nbsp; {{ p.location }}</p>
 
-        <div class="stack">
-          @for (s of p.profileStacks.slice(0, 8); track s.id) {
-            <span class="pill">{{ s.name }}</span>
-          }
-          @if (p.profileStacks.length > 8) {
-            <span class="pill pill-more">+{{ p.profileStacks.length - 8 }} more</span>
-          }
-        </div>
+      <div class="stack">
+        @for (s of heroStack(p.profileStacks); track s.id) {
+        <span class="pill">{{ s.name }}</span>
+        }
+        @if (p.profileStacks.length > heroStack(p.profileStacks).length) {
+        <span class="pill pill-more">+{{ p.profileStacks.length - heroStack(p.profileStacks).length }} more</span>
+        }
+      </div>
 
-        <div class="ctas">
-          <button class="btn-secondary" (click)="scrollToTerminal()">
-            Explore Terminal &nbsp;↓
-          </button>
-        </div>
+      <div class="ctas">
+        <button class="btn-secondary" (click)="scrollToTerminal()">
+          Explore Terminal &nbsp;↓
+        </button>
+      </div>
 
       } @else {
-        <div class="skeleton-block"></div>
+      <div class="skeleton-block"></div>
       }
     </div>
 
-    <div class="scroll-hint" (click)="scrollToTerminal()">
-      <span>scroll to explore</span>
+    <div class="scroll-hint" (click)="scrollToNow()">
+      <span>see what I'm working on</span>
       <div class="scroll-arrow">↓</div>
     </div>
 
+  </section>
+
+  <!-- ── Now ──────────────────────────────────────────────────────────── -->
+  <section id="now-section" class="now-section">
+    <div class="now-inner">
+      <div class="now-header">
+        <span class="now-label">// now</span>
+        <span class="now-sub">what's being built</span>
+      </div>
+
+      <div class="now-grid">
+
+        <div class="now-card now-card--active">
+          <div class="now-card-top">
+            <span class="now-tag now-tag--building">building</span>
+            <span class="now-card-title">Portfolio Platform v1</span>
+          </div>
+          <p class="now-card-desc">
+            This page. Angular 20 standalone, signal-based architecture, interactive terminal emulator and multi-tenant
+            backend.
+          </p>
+          <div class="now-card-stack">
+            <span>Angular</span><span>NestJS</span><span>PostgreSQL</span><span>Docker</span>
+          </div>
+        </div>
+
+        <div class="now-card">
+          <div class="now-card-top">
+            <span class="now-tag now-tag--planned">planned</span>
+            <span class="now-card-title">Theme Builder</span>
+          </div>
+          <p class="now-card-desc">
+            Users pick a portfolio theme, customise colours and layout, and publish at their own URL. No code required.
+          </p>
+          <div class="now-card-stack">
+            <span>Multi-tenant</span><span>Lazy loading</span><span>Theme API</span>
+          </div>
+        </div>
+
+        <div class="now-card">
+          <div class="now-card-top">
+            <span class="now-tag now-tag--planned">planned</span>
+            <span class="now-card-title">Admin Panel</span>
+          </div>
+          <p class="now-card-desc">
+            Manage portfolio content, profile data, and published themes from a centralised dashboard.
+          </p>
+          <div class="now-card-stack">
+            <span>RBAC</span><span>Dashboard</span><span>CMS</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="now-continue" (click)="scrollToTerminal()">
+        <span>explore terminal</span>
+        <div class="scroll-arrow">↓</div>
+      </div>
+    </div>
   </section>
 
   <!-- ── Terminal ──────────────────────────────────────────────────────── -->
@@ -60,7 +119,7 @@
 
   <!-- ── Scroll to top ─────────────────────────────────────────────────── -->
   @if (showScrollTop()) {
-    <button class="scroll-top" (click)="scrollToTop()" aria-label="Scroll to top">↑</button>
+  <button class="scroll-top" (click)="scrollToTop()" aria-label="Scroll to top">↑</button>
   }
 
 </div>
