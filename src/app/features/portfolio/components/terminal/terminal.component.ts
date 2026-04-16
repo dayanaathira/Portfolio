@@ -5,7 +5,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TerminalService } from '../../services/terminal.service';
-import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
+import { SafeHtmlPipe } from '../../../../shared/pipes/safe-html.pipe';
 
 @Component({
     selector: 'app-terminal',
@@ -109,11 +109,11 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   focusInput() {
-    setTimeout(() => this.terminalInput?.nativeElement?.focus(), 50);
+    setTimeout(() => this.terminalInput?.nativeElement?.focus({ preventScroll: true }), 50);
   }
 
   focusOnClick() {
-    this.focusInput();
+    this.terminalInput?.nativeElement?.focus({ preventScroll: true });
   }
 
 /**

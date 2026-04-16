@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
 import { map } from "rxjs/operators";
-import { environment } from "../../environments/environment";
+import { environment } from "../../../environments/environment";
 import {
   ApiResponse,
   Profile,
@@ -13,7 +13,7 @@ import {
   Education,
   Hobby,
   ContactPayload,
-} from "../models";
+} from "../../shared/models";
 
 @Injectable({ providedIn: "root" })
 export class ApiService {
