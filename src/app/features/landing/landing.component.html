@@ -1,0 +1,66 @@
+<div class="page">
+
+  <!-- ── Hero ─────────────────────────────────────────────────────────── -->
+  <section class="hero">
+
+    <nav class="nav">
+      <div><span class="logo">dayana<span class="logo-dot">.cloud</span></span></div>
+      <div class="nav-links">
+        @if (profile(); as p) {
+          <a [href]="p.github" target="_blank" rel="noopener noreferrer" class="nav-link">GitHub</a>
+          <a [href]="p.linkedin" target="_blank" rel="noopener noreferrer" class="nav-link">LinkedIn</a>
+        }
+      </div>
+    </nav>
+
+    <div class="hero-body">
+      @if (profile(); as p) {
+
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          {{ p.status.name }}
+        </div>
+
+        <h1 class="name">{{ p.name }}</h1>
+        <h2 class="role">{{ p.role }}</h2>
+        <p class="meta">TM Research &amp; Development &nbsp;·&nbsp; {{ p.location }}</p>
+
+        <div class="stack">
+          @for (s of p.profileStacks.slice(0, 8); track s.id) {
+            <span class="pill">{{ s.name }}</span>
+          }
+          @if (p.profileStacks.length > 8) {
+            <span class="pill pill-more">+{{ p.profileStacks.length - 8 }} more</span>
+          }
+        </div>
+
+        <div class="ctas">
+          <button class="btn-secondary" (click)="scrollToTerminal()">
+            Explore Terminal &nbsp;↓
+          </button>
+        </div>
+
+      } @else {
+        <div class="skeleton-block"></div>
+      }
+    </div>
+
+    <div class="scroll-hint" (click)="scrollToTerminal()">
+      <span>scroll to explore</span>
+      <div class="scroll-arrow">↓</div>
+    </div>
+
+  </section>
+
+  <!-- ── Terminal ──────────────────────────────────────────────────────── -->
+  <section id="terminal-section" class="terminal-section">
+    <div class="section-label">// explore interactively</div>
+    <app-terminal />
+  </section>
+
+  <!-- ── Scroll to top ─────────────────────────────────────────────────── -->
+  @if (showScrollTop()) {
+    <button class="scroll-top" (click)="scrollToTop()" aria-label="Scroll to top">↑</button>
+  }
+
+</div>

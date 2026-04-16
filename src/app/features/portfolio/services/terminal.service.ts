@@ -1,6 +1,6 @@
 import { Injectable, signal } from "@angular/core";
 import { forkJoin } from "rxjs";
-import { ApiService } from "./api.service";
+import { ApiService } from "../../../core/services/api.service";
 import { getHobbySvg } from "./hobby-svgs";
 import {
   Profile,
@@ -12,7 +12,7 @@ import {
   Hobby,
   TerminalLine,
   Command,
-} from "../models";
+} from "../../../shared/models";
 
 @Injectable({ providedIn: "root" })
 export class TerminalService {
