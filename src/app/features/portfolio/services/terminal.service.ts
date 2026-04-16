@@ -13,6 +13,7 @@ import {
   TerminalLine,
   Command,
 } from "../../../shared/models";
+import { SkillsEnum } from "../../../../app/shared/enums/skill-category.enum";
 
 @Injectable({ providedIn: "root" })
 export class TerminalService {
@@ -84,7 +85,7 @@ export class TerminalService {
     ["cat hobbies", () => this.cmdHobbies()],
     ["cat contact", () => this.cmdContact()],
     ["curl contact", () => this.cmdContact()],
-    ["docker ps",    () => this.cmdDockerPs()],
+    ["docker ps", () => this.cmdDockerPs()],
     ["cat pipeline", () => this.cmdPipeline()],
     // ── Easter eggs ──────────────────────────────────────────────────────
     ["vim", () => this.eggVim()],
@@ -161,8 +162,14 @@ export class TerminalService {
     this.sessionHistory.push(raw.trim());
 
     // Async commands that manage their own output
-    if (cmd === "pdf resume")        { this.cmdResume();    return; }
-    if (cmd === "curl /api/health")  { this.cmdApiHealth(); return; }
+    if (cmd === "pdf resume") {
+      this.cmdResume();
+      return;
+    }
+    if (cmd === "curl /api/health") {
+      this.cmdApiHealth();
+      return;
+    }
 
     // Named commands (including cat education/hobbies/contact) take priority
     if (this.commandMap.has(cmd)) {
@@ -309,9 +316,9 @@ export class TerminalService {
         const pills = skills
           .map((s) => {
             const cls =
-              s.profiency === "Expert"
+              s.profiency === SkillsEnum.Expert
                 ? "grn"
-                : s.profiency === "Intermediate"
+                : s.profiency === SkillsEnum.Intermediate
                   ? "yel"
                   : "dim";
             return `<span class="pill pm"><span class="${cls}">${this.esc(s.name)}</span></span>`;
@@ -436,7 +443,13 @@ export class TerminalService {
   private cmdDockerPs(): string {
     const uptime = (days: number, hrs: number) =>
       `Up ${days} days, ${hrs} hours`;
-    const row = (id: string, image: string, status: string, ports: string, name: string) =>
+    const row = (
+      id: string,
+      image: string,
+      status: string,
+      ports: string,
+      name: string,
+    ) =>
       `<tr>
         <td class="dim">${id}</td>
         <td class="wht">${image}</td>
@@ -446,9 +459,27 @@ export class TerminalService {
       </tr>`;
     // Update these to match your actual running containers
     const rows = [
-      row("a1f3c92d", "nginx:alpine",       uptime(14, 3),  "0.0.0.0:80->80, 443->443", "nginx-proxy"),
-      row("b2e4d83c", "node:20-alpine",      uptime(14, 3),  "0.0.0.0:3000->3000",       "arkspace-api"),
-      row("c3f5e74b", "postgres:16-alpine",  uptime(14, 3),  "127.0.0.1:5432->5432",     "postgres-db"),
+      row(
+        "a1f3c92d",
+        "nginx:alpine",
+        uptime(14, 3),
+        "0.0.0.0:80->80, 443->443",
+        "nginx-proxy",
+      ),
+      row(
+        "b2e4d83c",
+        "node:20-alpine",
+        uptime(14, 3),
+        "0.0.0.0:3000->3000",
+        "arkspace-api",
+      ),
+      row(
+        "c3f5e74b",
+        "postgres:16-alpine",
+        uptime(14, 3),
+        "127.0.0.1:5432->5432",
+        "postgres-db",
+      ),
     ].join("");
     return `<div class="t-out" style="margin-bottom:6px">
   <span class="dim">CONTAINER ID   IMAGE                  STATUS              PORTS                      NAMES</span>
@@ -457,12 +488,16 @@ export class TerminalService {
   }
 
   private cmdApiHealth(): void {
-    this.pushOutput(`<span class="t-loading">curl https://dayana.cloud/api-arkspace/v1/health</span>`);
+    this.pushOutput(
+      `<span class="t-loading">curl https://dayana.cloud/api-arkspace/v1/health</span>`,
+    );
     this.api.getHealth().subscribe({
       next: (data) => {
         const ts = new Date().toISOString();
         const pretty = JSON.stringify(data, null, 2)
-          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
           .replace(/"([^"]+)":/g, '<span class="yel">"$1"</span>:')
           .replace(/: "([^"]+)"/g, ': <span class="wht">"$1"</span>')
           .replace(/: (\d+)/g, ': <span class="blu">$1</span>');
@@ -474,18 +509,19 @@ export class TerminalService {
       },
       error: (err) => {
         const status = err?.status ?? 0;
-        const msg = status === 0
-          ? 'could not reach server'
-          : `HTTP ${status} — ${err?.statusText ?? 'error'}`;
+        const msg =
+          status === 0
+            ? "could not reach server"
+            : `HTTP ${status} — ${err?.statusText ?? "error"}`;
         this.replaceLastOutput(
-          `<span class="red">curl: (7) ${msg}</span><span class="dim"> · is the API running?</span>`
+          `<span class="red">curl: (7) ${msg}</span><span class="dim"> · is the API running?</span>`,
         );
       },
     });
   }
 
   private cmdPipeline(): string {
-    const stage = (icon: string, name: string, detail: string, cls = 'grn') =>
+    const stage = (icon: string, name: string, detail: string, cls = "grn") =>
       `<div class="t-log-row">
         <span class="${cls}">${icon} ${name}</span>
         <span class="dim"> → ${detail}</span>
@@ -494,12 +530,12 @@ export class TerminalService {
   <span class="grn" style="font-weight:700">// CI/CD pipeline</span>
   <span class="dim"> · GitHub Actions → self-hosted server</span>
 </div>
-${stage('▸', 'lint',         'eslint + prettier check')}
-${stage('▸', 'test',         'jest unit tests')}
-${stage('▸', 'build',        'nest build → dist/')}
-${stage('▸', 'docker build', 'build image · tag :latest + :sha')}
-${stage('▸', 'docker push',  'push to GitHub Container Registry (ghcr.io)')}
-${stage('▸', 'deploy',       'SSH → docker pull + docker compose up -d')}
+${stage("▸", "lint", "eslint + prettier check")}
+${stage("▸", "test", "jest unit tests")}
+${stage("▸", "build", "nest build → dist/")}
+${stage("▸", "docker build", "build image · tag :latest + :sha")}
+${stage("▸", "docker push", "push to GitHub Container Registry (ghcr.io)")}
+${stage("▸", "deploy", "SSH → docker pull + docker compose up -d")}
 <div class="t-log-row"><span class="dim">triggered on: push to </span><span class="wht">main</span></div>`;
   }
 
