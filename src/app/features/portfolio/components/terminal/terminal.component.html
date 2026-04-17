@@ -31,7 +31,7 @@
 
         <!-- Input line -->
         <div class="prompt-line" *ngIf="line.type === 'input'">
-          <span class="ps-user">dayana</span><span class="ps-at">&#64;</span><span class="ps-host">portfolio</span><span class="ps-colon">:</span><span class="ps-path">~</span><span class="ps-dollar">$&nbsp;</span>
+          <span class="ps-user">dayana</span><span class="ps-at">&#64;</span><span class="ps-host">portfolio</span><span class="ps-colon">:</span><span class="ps-path">{{ line.dir ?? '~' }}</span><span class="ps-dollar">$&nbsp;</span>
           <span class="cmd-text">{{ line.content }}</span>
         </div>
 
@@ -46,7 +46,7 @@
 
     <!-- Active input -->
     <div class="input-row" *ngIf="motdDone()">
-      <span class="ps-user">dayana</span><span class="ps-at">&#64;</span><span class="ps-host">portfolio</span><span class="ps-colon">:</span><span class="ps-path">~</span><span class="ps-dollar">$&nbsp;</span>
+      <span class="ps-user">dayana</span><span class="ps-at">&#64;</span><span class="ps-host">portfolio</span><span class="ps-colon">:</span><span class="ps-path">{{ terminal.currentDir() }}</span><span class="ps-dollar">$&nbsp;</span>
       <span class="input-inner">
         <span class="input-ghost" aria-hidden="true">{{ inputValue || '' }}<span class="cursor" [class.visible]="showCursor()"></span></span>
         <input
