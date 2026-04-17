@@ -12,13 +12,17 @@ nginx
 .env.*
 !.env.example
 
+# Angular environment files with real URLs — use environment.ts.example as template
+src/environments/environment.prod.ts
+src/environments/environment.dev.ts
+
 # Editor
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# OSs
 .DS_Store
 Thumbs.db
 
