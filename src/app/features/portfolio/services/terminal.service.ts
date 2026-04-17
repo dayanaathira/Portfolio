@@ -11,9 +11,14 @@ import {
   Education,
   Hobby,
   TerminalLine,
-  Command,
 } from "../../../shared/models";
 import { SkillsEnum } from "../../../../app/shared/enums/skill-category.enum";
+import { environment } from "../../../../environments/environment";
+import {
+  TERMINAL_COMMANDS, CAT_ALIASES, WORDLE_WORDS,
+  RESUME, HIDDEN_DIR, WORDLE_CONFIG,
+  DOCKER_CONTAINERS, PIPELINE_STAGES, FILESYSTEM_ENTRIES,
+} from "../../../shared/enums/terminal.constants";
 
 @Injectable({ providedIn: "root" })
 export class TerminalService {
@@ -30,57 +35,27 @@ export class TerminalService {
   private pendingQueue: string[] = [];
   private sessionHistory: string[] = [];
 
-  readonly COMMANDS: Command[] = [
-    { key: "help", description: "show available commands" },
-    { key: "whoami", description: "who is Dayana?" },
-    {
-      key: "ls projects",
-      description: "list all projects",
-      aliases: ["ls projects"],
-    },
-    {
-      key: "ls stack",
-      description: "tech stack & skill levels",
-      aliases: ["cat stack"],
-    },
-    {
-      key: "git log",
-      description: "work experience timeline",
-      aliases: ["git log --oneline"],
-    },
-    {
-      key: "cat <company>",
-      description: "full details for a work experience  (e.g. cat tmrnd)",
-    },
-    { key: "cat education", description: "academic background" },
-    { key: "cat hobbies", description: "life outside the terminal" },
-    {
-      key: "cat contact",
-      description: "get in touch",
-      aliases: ["curl contact"],
-    },
-    { key: "docker ps", description: "running services on my server" },
-    { key: "curl /api/health", description: "live health check of my API" },
-    { key: "cat pipeline", description: "CI/CD pipeline overview" },
-    { key: "pdf resume", description: "download my resume" },
-    { key: "clear", description: "clear terminal" },
-  ];
+  // ── Hidden directory & Wordle state ──────────────────────────────────────
+  currentDir = signal('~');
+  private wordleActive = false;
+  private wordleWord = '';
+  private wordleGuesses: string[] = [];
 
-  private readonly catAliases: Record<string, number> = {
-    tmrnd: 1,
-    epnox: 2,
-  };
+  readonly COMMANDS = TERMINAL_COMMANDS;
+  private readonly catAliases = CAT_ALIASES;
 
   // Map each command string → its handler. Aliases share the same handler reference.
   private readonly commandMap = new Map<string, () => string>([
     ["help", () => this.cmdHelp()],
     ["whoami", () => this.cmdWhoami()],
     ["ls projects", () => this.cmdProjects()],
-    ["ls", () => this.cmdProjects()],
+    ["ls", () => this.currentDir() === HIDDEN_DIR ? this.eggLsHidden() : this.cmdProjects()],
     ["ls stack", () => this.cmdStack()],
     ["cat stack", () => this.cmdStack()],
     ["git log", () => this.cmdGitLog()],
     ["git log --oneline", () => this.cmdGitLog()],
+    ["git stash list", () => this.eggGitStashList()],
+    ["git stash pop", () => this.eggGitStashPop()],
     ["cat education", () => this.cmdEducation()],
     ["cat hobbies", () => this.cmdHobbies()],
     ["cat contact", () => this.cmdContact()],
@@ -96,6 +71,7 @@ export class TerminalService {
     ["exit", () => this.eggExit()],
     ["quit", () => this.eggExit()],
     ["pwd", () => this.eggPwd()],
+    ["ls -a", () => this.eggLsLa()],
     ["ls -la", () => this.eggLsLa()],
     ["git status", () => this.eggGitStatus()],
     ["git push", () => this.eggGitPush()],
@@ -161,6 +137,12 @@ export class TerminalService {
     this.pushInput(raw.trim());
     this.sessionHistory.push(raw.trim());
 
+    // Wordle game intercepts all input while active
+    if (this.wordleActive) {
+      this.handleWordleGuess(cmd);
+      return;
+    }
+
     // Async commands that manage their own output
     if (cmd === "pdf resume") {
       this.cmdResume();
@@ -196,8 +178,29 @@ export class TerminalService {
       return;
     }
 
-    // Pattern: cd <anything>
-    if (cmd === "cd" || cmd.startsWith("cd ")) {
+    // Pattern: ./wordle — only works inside .hidden
+    if (cmd === "./wordle" || cmd === "wordle") {
+      if (this.currentDir() === HIDDEN_DIR) {
+        this.startWordle();
+      } else {
+        this.pushOutput(`<span class="red">bash: ./wordle: No such file or directory</span>`);
+      }
+      return;
+    }
+
+    // Pattern: cd <anything> — normalise trailing slashes
+    const cdTarget = cmd.startsWith("cd ") ? cmd.slice(3).replace(/\/+$/, "") : "";
+    if (cdTarget === HIDDEN_DIR) {
+      this.currentDir.set(HIDDEN_DIR);
+      this.pushOutput(this.eggCdHidden());
+      return;
+    }
+    if (cmd === "cd" || cdTarget === "~" || cdTarget === "..") {
+      this.currentDir.set("~");
+      this.pushOutput(`<span class="dim">Back to </span><span class="wht">~/portfolio</span><span class="dim">.</span>`);
+      return;
+    }
+    if (cmd.startsWith("cd ")) {
       this.pushOutput(this.eggCd());
       return;
     }
@@ -348,7 +351,11 @@ export class TerminalService {
       })
       .join("");
     const idHint = this.experience.map((e) => e.id).join(" | ");
-    return `<div class="t-out" style="margin-bottom:6px">${rows}
+    const hiddenCommit = `<div class="t-log-row" style="opacity:0.4">
+        <span class="dim">* </span><span class="yel">1337c0d</span>
+        <span class="dim">chore: clean up old experiments... or did I?</span>
+      </div>`;
+    return `<div class="t-out" style="margin-bottom:6px">${rows}${hiddenCommit}
       <br><span class="dim">tip: </span><span class="wht">cat &lt;${idHint}&gt;</span><span class="dim"> to read full details</span>
     </div>`;
   }
@@ -441,46 +448,15 @@ export class TerminalService {
   }
 
   private cmdDockerPs(): string {
-    const uptime = (days: number, hrs: number) =>
-      `Up ${days} days, ${hrs} hours`;
-    const row = (
-      id: string,
-      image: string,
-      status: string,
-      ports: string,
-      name: string,
-    ) =>
+    const rows = DOCKER_CONTAINERS.map(c =>
       `<tr>
-        <td class="dim">${id}</td>
-        <td class="wht">${image}</td>
-        <td class="grn">${status}</td>
-        <td class="yel">${ports}</td>
-        <td class="grn">${name}</td>
-      </tr>`;
-    // Update these to match your actual running containers
-    const rows = [
-      row(
-        "a1f3c92d",
-        "nginx:alpine",
-        uptime(14, 3),
-        "0.0.0.0:80->80, 443->443",
-        "nginx-proxy",
-      ),
-      row(
-        "b2e4d83c",
-        "node:20-alpine",
-        uptime(14, 3),
-        "0.0.0.0:3000->3000",
-        "arkspace-api",
-      ),
-      row(
-        "c3f5e74b",
-        "postgres:16-alpine",
-        uptime(14, 3),
-        "127.0.0.1:5432->5432",
-        "postgres-db",
-      ),
-    ].join("");
+        <td class="dim">${c.id}</td>
+        <td class="wht">${c.image}</td>
+        <td class="grn">Up ${c.days} days, ${c.hrs} hours</td>
+        <td class="yel">${c.ports}</td>
+        <td class="grn">${c.name}</td>
+      </tr>`
+    ).join('');
     return `<div class="t-out" style="margin-bottom:6px">
   <span class="dim">CONTAINER ID   IMAGE                  STATUS              PORTS                      NAMES</span>
 </div>
@@ -489,7 +465,7 @@ export class TerminalService {
 
   private cmdApiHealth(): void {
     this.pushOutput(
-      `<span class="t-loading">curl https://dayana.cloud/api-arkspace/v1/health</span>`,
+      `<span class="t-loading">curl ${environment.apiUrl}/health</span>`,
     );
     this.api.getHealth().subscribe({
       next: (data) => {
@@ -521,28 +497,23 @@ export class TerminalService {
   }
 
   private cmdPipeline(): string {
-    const stage = (icon: string, name: string, detail: string, cls = "grn") =>
+    const stages = PIPELINE_STAGES.map(s =>
       `<div class="t-log-row">
-        <span class="${cls}">${icon} ${name}</span>
-        <span class="dim"> → ${detail}</span>
-      </div>`;
+        <span class="grn">▸ ${s.name}</span>
+        <span class="dim"> → ${s.detail}</span>
+      </div>`
+    ).join('');
     return `<div class="t-out" style="margin-bottom:6px">
   <span class="grn" style="font-weight:700">// CI/CD pipeline</span>
   <span class="dim"> · GitHub Actions → self-hosted server</span>
 </div>
-${stage("▸", "lint", "eslint + prettier check")}
-${stage("▸", "test", "jest unit tests")}
-${stage("▸", "build", "nest build → dist/")}
-${stage("▸", "docker build", "build image · tag :latest + :sha")}
-${stage("▸", "docker push", "push to GitHub Container Registry (ghcr.io)")}
-${stage("▸", "deploy", "SSH → docker pull + docker compose up -d")}
+${stages}
 <div class="t-log-row"><span class="dim">triggered on: push to </span><span class="wht">main</span></div>`;
   }
 
   private cmdResume(): void {
-    const pdfPath = "assets/Dayana Athira - Backend Software Engineer.pdf";
     this.pushOutput(`<span class="t-loading">opening resume</span>`);
-    fetch(pdfPath)
+    fetch(RESUME.path)
       .then((res) => {
         if (!res.ok) throw new Error();
         return res.blob();
@@ -552,7 +523,7 @@ ${stage("▸", "deploy", "SSH → docker pull + docker compose up -d")}
         window.open(url, "_blank");
         const a = document.createElement("a");
         a.href = url;
-        a.download = "Dayana Athira - Backend Software Engineer.pdf";
+        a.download = RESUME.filename;
         a.click();
         URL.revokeObjectURL(url);
         this.replaceLastOutput(
@@ -587,7 +558,10 @@ ${stage("▸", "deploy", "SSH → docker pull + docker compose up -d")}
   }
 
   private eggPwd(): string {
-    return `<span class="wht">/home/dayana/portfolio</span>`;
+    const path = this.currentDir() === HIDDEN_DIR
+      ? '/home/dayana/portfolio/.hidden'
+      : '/home/dayana/portfolio';
+    return `<span class="wht">${path}</span>`;
   }
 
   private eggCd(): string {
@@ -599,17 +573,12 @@ ${stage("▸", "deploy", "SSH → docker pull + docker compose up -d")}
   }
 
   private eggLsLa(): string {
-    const row = (perms: string, name: string, cls: string) =>
-      `<span class="dim">${perms}</span>  <span class="grn">dayana</span>  <span class="${cls}">${name}</span>`;
+    const rows = FILESYSTEM_ENTRIES.map(e =>
+      `<span class="dim">${e.perms}</span>  <span class="grn">dayana</span>  <span class="${e.cls}">${e.name}</span>`
+    ).join('<br>  ');
     return `<div class="t-out">
-  <span class="dim">total 42</span><br>
-  ${row("drwxr-xr-x", "portfolio/", "wht")}<br>
-  ${row("drwxr-xr-x", "projects/", "wht")}<br>
-  ${row("drwxr-xr-x", "experience/", "wht")}<br>
-  ${row("drwxr-xr-x", "stack/", "wht")}<br>
-  ${row("-rw-r--r--", "resume.pdf", "yel")}<br>
-  ${row("-rw-r--r--", "hobbies.txt", "wht")}<br>
-  ${row("-rwxr-xr-x", "life.sh", "grn")}
+  <span class="dim">total ${FILESYSTEM_ENTRIES.length * 6}</span><br>
+  ${rows}
 </div>`;
   }
 
@@ -658,6 +627,122 @@ ${stage("▸", "deploy", "SSH → docker pull + docker compose up -d")}
     return `<span class="dim">npm warn deprecated everything@∞.0.0</span><br><span class="dim">added 847 packages in </span><span class="wht">3 years</span>`;
   }
 
+  private eggGitStashList(): string {
+    return `<div class="t-out">
+  <span class="yel">stash@{0}</span><span class="dim">: WIP: wordle prototype</span><br>
+  <span class="dim">(hint: try </span><span class="grn">git stash pop</span><span class="dim"> to restore it)</span>
+</div>`;
+  }
+
+  private eggGitStashPop(): string {
+    return `<div class="t-out">
+  <span class="grn">Dropped stash@{0}</span><span class="dim">.</span><br>
+  <span class="dim">Restored 1 stashed file. Check your working directory —</span><br>
+  <span class="dim">hint: try </span><span class="grn">ls -a</span>
+</div>`;
+  }
+
+  private eggCdHidden(): string {
+    return `<span class="dim">Entering </span><span class="wht">.hidden/</span><span class="dim"> — type </span><span class="grn">ls</span><span class="dim"> to see what's here.</span>`;
+  }
+
+  private eggLsHidden(): string {
+    return `<div class="t-out">
+  <span class="dim">-rwxr-xr-x</span>  <span class="grn">dayana</span>  <span class="grn">wordle</span><br>
+  <span class="dim">(run </span><span class="grn">./wordle</span><span class="dim"> to play)</span>
+</div>`;
+  }
+
+  // ── Wordle game ──────────────────────────────────────────────────────────
+
+  private startWordle(): void {
+    this.wordleWord = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
+    this.wordleGuesses = [];
+    this.wordleActive = true;
+    const c = WORDLE_CONFIG.colors;
+    this.pushOutput(`<div class="t-out">
+  <span class="grn" style="font-weight:700;font-size:15px;letter-spacing:2px">WORDLE</span>  <span class="dim">— guess the ${WORDLE_CONFIG.wordLength}-letter word · ${WORDLE_CONFIG.maxTries} tries</span><br><br>
+  <span style="background:${c.green.bg};padding:1px 6px;border-radius:3px;color:${c.green.fg};font-size:11px">green</span> <span class="dim">correct position &nbsp;</span>
+  <span style="background:${c.yellow.bg};padding:1px 6px;border-radius:3px;color:${c.yellow.fg};font-size:11px">yellow</span> <span class="dim">wrong position &nbsp;</span>
+  <span style="background:${c.grey.bg};padding:1px 6px;border-radius:3px;color:${c.grey.fg};font-size:11px">grey</span> <span class="dim">not in word</span><br><br>
+  <span class="dim">type a ${WORDLE_CONFIG.wordLength}-letter word to guess · type </span><span class="yel">quit</span><span class="dim"> to exit</span>
+</div>`);
+  }
+
+  private handleWordleGuess(guess: string): void {
+    if (guess === 'quit' || guess === 'exit') {
+      const word = this.wordleWord;
+      this.wordleActive = false;
+      this.wordleWord = '';
+      this.wordleGuesses = [];
+      this.pushOutput(`<span class="dim">Wordle exited. The word was </span><span class="yel">${word}</span><span class="dim">.</span>`);
+      return;
+    }
+
+    if (guess.length !== WORDLE_CONFIG.wordLength || !/^[a-z]+$/.test(guess)) {
+      this.pushOutput(`<span class="red">invalid:</span> <span class="dim">must be exactly 5 letters.</span>`);
+      return;
+    }
+
+    this.wordleGuesses.push(guess);
+    const row = this.wordleColorRow(guess, this.wordleWord);
+
+    if (guess === this.wordleWord) {
+      const tries = this.wordleGuesses.length;
+      this.pushOutput(`${row}<br><span class="grn">🎉 correct! Got it in ${tries} ${tries === 1 ? 'try' : 'tries'}.</span> <span class="dim">Run </span><span class="grn">./wordle</span><span class="dim"> to play again.</span>`);
+      this.wordleActive = false;
+      this.wordleWord = '';
+      this.wordleGuesses = [];
+      return;
+    }
+
+    const remaining = WORDLE_CONFIG.maxTries - this.wordleGuesses.length;
+    if (remaining === 0) {
+      const word = this.wordleWord;
+      this.wordleActive = false;
+      this.wordleWord = '';
+      this.wordleGuesses = [];
+      this.pushOutput(`${row}<br><span class="red">game over.</span> <span class="dim">The word was </span><span class="yel">${word}</span><span class="dim">. Run </span><span class="grn">./wordle</span><span class="dim"> to try again.</span>`);
+      return;
+    }
+
+    this.pushOutput(`${row}<br><span class="dim">${remaining} ${remaining === 1 ? 'guess' : 'guesses'} remaining</span>`);
+  }
+
+  private wordleColorRow(guess: string, target: string): string {
+    const len = WORDLE_CONFIG.wordLength;
+    const used = new Array(len).fill(false);
+    const colors = new Array(len).fill('grey');
+
+    // First pass: greens
+    for (let i = 0; i < len; i++) {
+      if (guess[i] === target[i]) {
+        colors[i] = 'green';
+        used[i] = true;
+      }
+    }
+
+    // Second pass: yellows
+    for (let i = 0; i < len; i++) {
+      if (colors[i] === 'green') continue;
+      for (let j = 0; j < len; j++) {
+        if (!used[j] && guess[i] === target[j]) {
+          colors[i] = 'yellow';
+          used[j] = true;
+          break;
+        }
+      }
+    }
+
+    const c = WORDLE_CONFIG.colors;
+    const tiles = guess.split('').map((ch, i) => {
+      const { bg, fg } = colors[i] === 'green' ? c.green : colors[i] === 'yellow' ? c.yellow : c.grey;
+      return `<span style="background:${bg};color:${fg};width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;font-weight:700;font-size:14px;text-transform:uppercase">${ch}</span>`;
+    }).join('');
+
+    return `<span style="display:inline-flex;gap:5px">${tiles}</span>`;
+  }
+
   // ── Helpers ─────────────────────────────────────────────────────────────
 
   private esc(s: string): string {
@@ -673,7 +758,7 @@ ${stage("▸", "deploy", "SSH → docker pull + docker compose up -d")}
   }
 
   private pushInput(cmd: string): void {
-    this.lines.update((l) => [...l, { type: "input", content: cmd }]);
+    this.lines.update((l) => [...l, { type: "input", content: cmd, dir: this.currentDir() }]);
   }
 
   private pushOutput(html: string): void {
