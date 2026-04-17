@@ -80,6 +80,9 @@
             },
             "development": {
               "buildTarget": "portfolio-angular:build:development"
+            },
+            "staging": {
+              "buildTarget": "portfolio-angular:build:staging"
             }
           },
           "defaultConfiguration": "development"

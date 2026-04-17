@@ -1,11 +1,11 @@
 import {
   Component, OnInit, OnDestroy, ViewChild,
-  ElementRef, AfterViewChecked, signal, HostListener, effect
+  ElementRef, AfterViewChecked, AfterViewInit, signal, HostListener, effect
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TerminalService } from '../../services/terminal.service';
-import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
+import { SafeHtmlPipe } from '../../../../shared/pipes/safe-html.pipe';
 
 @Component({
     selector: 'app-terminal',
@@ -13,7 +13,7 @@ import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
     templateUrl: './terminal.component.html',
     styleUrl: './terminal.component.scss'
 })
-export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class TerminalComponent implements OnInit, AfterViewInit, OnDestroy, AfterViewChecked {
   @ViewChild('terminalBody') terminalBody!: ElementRef;
   @ViewChild('terminalInput') terminalInput!: ElementRef;
 
@@ -43,7 +43,9 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
   private shouldScroll = false;
   private onboardTypingTimeout: any;
 
-  constructor(public terminal: TerminalService) {
+  private visibilityObserver?: IntersectionObserver;
+
+  constructor(public terminal: TerminalService, private el: ElementRef) {
     effect(() => {
       terminal.scrollTick();
       this.shouldScroll = true;
@@ -57,13 +59,26 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.showCursor.update(v => !v);
     }, 530);
     this.showOnboarding.set(true);
-    this.startOnboardDemo();
+  }
+
+  ngAfterViewInit() {
+    this.visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          this.visibilityObserver?.disconnect();
+          this.startOnboardDemo();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    this.visibilityObserver.observe(this.el.nativeElement);
   }
 
   ngOnDestroy() {
     clearInterval(this.cursorInterval);
     clearInterval(this.onboardCursorInterval);
     clearTimeout(this.onboardTypingTimeout);
+    this.visibilityObserver?.disconnect();
   }
 
   ngAfterViewChecked() {
@@ -109,11 +124,11 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   focusInput() {
-    setTimeout(() => this.terminalInput?.nativeElement?.focus(), 50);
+    setTimeout(() => this.terminalInput?.nativeElement?.focus({ preventScroll: true }), 50);
   }
 
   focusOnClick() {
-    this.focusInput();
+    this.terminalInput?.nativeElement?.focus({ preventScroll: true });
   }
 
 /**
