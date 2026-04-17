@@ -92,6 +92,7 @@ export interface TerminalLine {
   type: 'input' | 'output';
   content: string;
   html?: boolean;
+  dir?: string;
 }
 
 export interface Command {
