@@ -69,7 +69,7 @@ export class TerminalComponent implements OnInit, AfterViewInit, OnDestroy, Afte
           this.startOnboardDemo();
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.6 }
     );
     this.visibilityObserver.observe(this.el.nativeElement);
   }

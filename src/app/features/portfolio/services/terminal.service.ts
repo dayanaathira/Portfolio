@@ -15,9 +15,15 @@ import {
 import { SkillsEnum } from "../../../../app/shared/enums/skill-category.enum";
 import { environment } from "../../../../environments/environment";
 import {
-  TERMINAL_COMMANDS, CAT_ALIASES, WORDLE_WORDS,
-  RESUME, HIDDEN_DIR, WORDLE_CONFIG,
-  DOCKER_CONTAINERS, PIPELINE_STAGES, FILESYSTEM_ENTRIES,
+  TERMINAL_COMMANDS,
+  CAT_ALIASES,
+  WORDLE_WORDS,
+  RESUME,
+  HIDDEN_DIR,
+  WORDLE_CONFIG,
+  DOCKER_CONTAINERS,
+  PIPELINE_STAGES,
+  FILESYSTEM_ENTRIES,
 } from "../../../shared/enums/terminal.constants";
 
 @Injectable({ providedIn: "root" })
@@ -36,9 +42,9 @@ export class TerminalService {
   private sessionHistory: string[] = [];
 
   // ── Hidden directory & Wordle state ──────────────────────────────────────
-  currentDir = signal('~');
+  currentDir = signal("~");
   private wordleActive = false;
-  private wordleWord = '';
+  private wordleWord = "";
   private wordleGuesses: string[] = [];
 
   readonly COMMANDS = TERMINAL_COMMANDS;
@@ -49,7 +55,13 @@ export class TerminalService {
     ["help", () => this.cmdHelp()],
     ["whoami", () => this.cmdWhoami()],
     ["ls projects", () => this.cmdProjects()],
-    ["ls", () => this.currentDir() === HIDDEN_DIR ? this.eggLsHidden() : this.cmdProjects()],
+    [
+      "ls",
+      () =>
+        this.currentDir() === HIDDEN_DIR
+          ? this.eggLsHidden()
+          : this.cmdProjects(),
+    ],
     ["ls stack", () => this.cmdStack()],
     ["cat stack", () => this.cmdStack()],
     ["git log", () => this.cmdGitLog()],
@@ -183,13 +195,17 @@ export class TerminalService {
       if (this.currentDir() === HIDDEN_DIR) {
         this.startWordle();
       } else {
-        this.pushOutput(`<span class="red">bash: ./wordle: No such file or directory</span>`);
+        this.pushOutput(
+          `<span class="red">bash: ./wordle: No such file or directory</span>`,
+        );
       }
       return;
     }
 
     // Pattern: cd <anything> — normalise trailing slashes
-    const cdTarget = cmd.startsWith("cd ") ? cmd.slice(3).replace(/\/+$/, "") : "";
+    const cdTarget = cmd.startsWith("cd ")
+      ? cmd.slice(3).replace(/\/+$/, "")
+      : "";
     if (cdTarget === HIDDEN_DIR) {
       this.currentDir.set(HIDDEN_DIR);
       this.pushOutput(this.eggCdHidden());
@@ -197,7 +213,9 @@ export class TerminalService {
     }
     if (cmd === "cd" || cdTarget === "~" || cdTarget === "..") {
       this.currentDir.set("~");
-      this.pushOutput(`<span class="dim">Back to </span><span class="wht">~/portfolio</span><span class="dim">.</span>`);
+      this.pushOutput(
+        `<span class="dim">Back to </span><span class="wht">~/portfolio</span><span class="dim">.</span>`,
+      );
       return;
     }
     if (cmd.startsWith("cd ")) {
@@ -411,11 +429,11 @@ export class TerminalService {
     return this.education
       .map(
         (e) => `<div class="t-box">
-      <div class="t-row"><span class="t-k">degree</span><span class="grn">${this.esc(e.degree)}</span></div>
-      <div class="t-row"><span class="t-k">field</span><span class="wht">${this.esc(e.fieldOfStudy)}</span></div>
-      <div class="t-row"><span class="t-k">institution</span><span class="wht">${this.esc(e.name)}</span></div>
-      <div class="t-row"><span class="t-k">period</span><span class="yel">${e.startDate} – ${e.endDate}</span></div>
-    </div>`,
+          <div class="t-row"><span class="t-k">degree</span><span class="grn">${this.esc(e.degree)}</span></div>
+          <div class="t-row"><span class="t-k">field</span><span class="wht">${this.esc(e.fieldOfStudy)}</span></div>
+          <div class="t-row"><span class="t-k">institution</span><span class="wht">${this.esc(e.name)}</span></div>
+          <div class="t-row"><span class="t-k">period</span><span class="yel">${e.startDate} – ${e.endDate}</span></div>
+        </div>`,
       )
       .join("");
   }
@@ -425,15 +443,15 @@ export class TerminalService {
     const panels = this.hobbies
       .map(
         (h) => `
-<div style="min-width:200px;max-width:280px">
-  <div class="t-section-hdr">// ${this.esc(h.category.name.toLowerCase())}</div>
-  ${getHobbySvg(h.category.id)}
-  <div class="t-out" style="font-size:12px;color:#888;line-height:1.7;max-width:260px">${this.esc(h.description)}</div>
-</div>`,
+        <div style="min-width:200px;max-width:280px">
+          <div class="t-section-hdr">// ${this.esc(h.category.name.toLowerCase())}</div>
+          ${getHobbySvg(h.category.id)}
+          <div class="t-out" style="font-size:12px;color:#888;line-height:1.7;max-width:260px">${this.esc(h.description)}</div>
+        </div>`,
       )
       .join("");
     return `<div class="t-out" style="margin-bottom:10px"><span class="grn" style="font-weight:700">// hobbies &amp; future dreams</span></div>
-<div style="display:flex;gap:40px;flex-wrap:wrap">${panels}</div>`;
+      <div style="display:flex;gap:40px;flex-wrap:wrap">${panels}</div>`;
   }
 
   private cmdContact(): string {
@@ -448,19 +466,20 @@ export class TerminalService {
   }
 
   private cmdDockerPs(): string {
-    const rows = DOCKER_CONTAINERS.map(c =>
-      `<tr>
+    const rows = DOCKER_CONTAINERS.map(
+      (c) =>
+        `<tr>
         <td class="dim">${c.id}</td>
         <td class="wht">${c.image}</td>
         <td class="grn">Up ${c.days} days, ${c.hrs} hours</td>
         <td class="yel">${c.ports}</td>
         <td class="grn">${c.name}</td>
-      </tr>`
-    ).join('');
+      </tr>`,
+    ).join("");
     return `<div class="t-out" style="margin-bottom:6px">
-  <span class="dim">CONTAINER ID   IMAGE                  STATUS              PORTS                      NAMES</span>
-</div>
-<table class="t-tbl"><tbody>${rows}</tbody></table>`;
+      <span class="dim">CONTAINER ID   IMAGE                  STATUS              PORTS                      NAMES</span>
+    </div>
+    <table class="t-tbl"><tbody>${rows}</tbody></table>`;
   }
 
   private cmdApiHealth(): void {
@@ -478,10 +497,10 @@ export class TerminalService {
           .replace(/: "([^"]+)"/g, ': <span class="wht">"$1"</span>')
           .replace(/: (\d+)/g, ': <span class="blu">$1</span>');
         this.replaceLastOutput(`<div class="t-out">
-  <span class="dim">HTTP/1.1</span> <span class="grn">200 OK</span>
-  <span class="dim">Content-Type: application/json · ${ts}</span><br>
-  <pre style="margin:6px 0;font-family:inherit;white-space:pre-wrap">${pretty}</pre>
-</div>`);
+          <span class="dim">HTTP/1.1</span> <span class="grn">200 OK</span>
+          <span class="dim">Content-Type: application/json · ${ts}</span><br>
+          <pre style="margin:6px 0;font-family:inherit;white-space:pre-wrap">${pretty}</pre>
+        </div>`);
       },
       error: (err) => {
         const status = err?.status ?? 0;
@@ -497,18 +516,19 @@ export class TerminalService {
   }
 
   private cmdPipeline(): string {
-    const stages = PIPELINE_STAGES.map(s =>
-      `<div class="t-log-row">
+    const stages = PIPELINE_STAGES.map(
+      (s) =>
+        `<div class="t-log-row">
         <span class="grn">▸ ${s.name}</span>
         <span class="dim"> → ${s.detail}</span>
-      </div>`
-    ).join('');
+      </div>`,
+    ).join("");
     return `<div class="t-out" style="margin-bottom:6px">
-  <span class="grn" style="font-weight:700">// CI/CD pipeline</span>
-  <span class="dim"> · GitHub Actions → self-hosted server</span>
-</div>
-${stages}
-<div class="t-log-row"><span class="dim">triggered on: push to </span><span class="wht">main</span></div>`;
+      <span class="grn" style="font-weight:700">// CI/CD pipeline</span>
+      <span class="dim"> · GitHub Actions → self-hosted server</span>
+    </div>
+    ${stages}
+    <div class="t-log-row"><span class="dim">triggered on: push to </span><span class="wht">main</span></div>`;
   }
 
   private cmdResume(): void {
@@ -558,9 +578,10 @@ ${stages}
   }
 
   private eggPwd(): string {
-    const path = this.currentDir() === HIDDEN_DIR
-      ? '/home/dayana/portfolio/.hidden'
-      : '/home/dayana/portfolio';
+    const path =
+      this.currentDir() === HIDDEN_DIR
+        ? "/home/dayana/portfolio/.hidden"
+        : "/home/dayana/portfolio";
     return `<span class="wht">${path}</span>`;
   }
 
@@ -573,22 +594,23 @@ ${stages}
   }
 
   private eggLsLa(): string {
-    const rows = FILESYSTEM_ENTRIES.map(e =>
-      `<span class="dim">${e.perms}</span>  <span class="grn">dayana</span>  <span class="${e.cls}">${e.name}</span>`
-    ).join('<br>  ');
+    const rows = FILESYSTEM_ENTRIES.map(
+      (e) =>
+        `<span class="dim">${e.perms}</span>  <span class="grn">dayana</span>  <span class="${e.cls}">${e.name}</span>`,
+    ).join("<br>  ");
     return `<div class="t-out">
-  <span class="dim">total ${FILESYSTEM_ENTRIES.length * 6}</span><br>
-  ${rows}
-</div>`;
+      <span class="dim">total ${FILESYSTEM_ENTRIES.length * 6}</span><br>
+      ${rows}
+    </div>`;
   }
 
   private eggGitStatus(): string {
     return `<div class="t-out">
-  <span class="grn">On branch</span> <span class="wht">main</span><br>
-  <span class="dim">Your branch is up to date with 'origin/main'.</span><br><br>
-  <span class="grn">nothing to commit, working tree clean</span><br>
-  <span class="dim">(but always something to learn)</span>
-</div>`;
+      <span class="grn">On branch</span> <span class="wht">main</span><br>
+      <span class="dim">Your branch is up to date with 'origin/main'.</span><br><br>
+      <span class="grn">nothing to commit, working tree clean</span><br>
+      <span class="dim">(but always something to learn)</span>
+    </div>`;
   }
 
   private eggGitPush(): string {
@@ -602,13 +624,13 @@ ${stages}
   private eggPing(target: string): string {
     const t = this.esc(target);
     return `<div class="t-out">
-  <span class="dim">PING ${t} — 56 bytes of data</span><br>
-  <span class="grn">64 bytes from ${t}: icmp_seq=1 ttl=64 time=0.1 ms</span><br>
-  <span class="grn">64 bytes from ${t}: icmp_seq=2 ttl=64 time=0.1 ms</span><br>
-  <span class="grn">64 bytes from ${t}: icmp_seq=3 ttl=64 time=0.1 ms</span><br>
-  <span class="dim">--- ${t} ping statistics ---</span><br>
-  <span class="wht">3 packets transmitted, 3 received, 0% packet loss</span>
-</div>`;
+      <span class="dim">PING ${t} — 56 bytes of data</span><br>
+      <span class="grn">64 bytes from ${t}: icmp_seq=1 ttl=64 time=0.1 ms</span><br>
+      <span class="grn">64 bytes from ${t}: icmp_seq=2 ttl=64 time=0.1 ms</span><br>
+      <span class="grn">64 bytes from ${t}: icmp_seq=3 ttl=64 time=0.1 ms</span><br>
+      <span class="dim">--- ${t} ping statistics ---</span><br>
+      <span class="wht">3 packets transmitted, 3 received, 0% packet loss</span>
+    </div>`;
   }
 
   private eggHistory(): string {
@@ -629,17 +651,17 @@ ${stages}
 
   private eggGitStashList(): string {
     return `<div class="t-out">
-  <span class="yel">stash@{0}</span><span class="dim">: WIP: wordle prototype</span><br>
-  <span class="dim">(hint: try </span><span class="grn">git stash pop</span><span class="dim"> to restore it)</span>
-</div>`;
+      <span class="yel">stash@{0}</span><span class="dim">: WIP: wordle prototype</span><br>
+      <span class="dim">(hint: try </span><span class="grn">git stash pop</span><span class="dim"> to restore it)</span>
+    </div>`;
   }
 
   private eggGitStashPop(): string {
     return `<div class="t-out">
-  <span class="grn">Dropped stash@{0}</span><span class="dim">.</span><br>
-  <span class="dim">Restored 1 stashed file. Check your working directory —</span><br>
-  <span class="dim">hint: try </span><span class="grn">ls -a</span>
-</div>`;
+      <span class="grn">Dropped stash@{0}</span><span class="dim">.</span><br>
+      <span class="dim">Restored 1 stashed file. Check your working directory —</span><br>
+      <span class="dim">hint: try </span><span class="grn">ls -a</span>
+    </div>`;
   }
 
   private eggCdHidden(): string {
@@ -648,39 +670,44 @@ ${stages}
 
   private eggLsHidden(): string {
     return `<div class="t-out">
-  <span class="dim">-rwxr-xr-x</span>  <span class="grn">dayana</span>  <span class="grn">wordle</span><br>
-  <span class="dim">(run </span><span class="grn">./wordle</span><span class="dim"> to play)</span>
-</div>`;
+      <span class="dim">-rwxr-xr-x</span>  <span class="grn">dayana</span>  <span class="grn">wordle</span><br>
+      <span class="dim">(run </span><span class="grn">./wordle</span><span class="dim"> to play)</span>
+    </div>`;
   }
 
   // ── Wordle game ──────────────────────────────────────────────────────────
 
   private startWordle(): void {
-    this.wordleWord = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
+    this.wordleWord =
+      WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
     this.wordleGuesses = [];
     this.wordleActive = true;
     const c = WORDLE_CONFIG.colors;
     this.pushOutput(`<div class="t-out">
-  <span class="grn" style="font-weight:700;font-size:15px;letter-spacing:2px">WORDLE</span>  <span class="dim">— guess the ${WORDLE_CONFIG.wordLength}-letter word · ${WORDLE_CONFIG.maxTries} tries</span><br><br>
-  <span style="background:${c.green.bg};padding:1px 6px;border-radius:3px;color:${c.green.fg};font-size:11px">green</span> <span class="dim">correct position &nbsp;</span>
-  <span style="background:${c.yellow.bg};padding:1px 6px;border-radius:3px;color:${c.yellow.fg};font-size:11px">yellow</span> <span class="dim">wrong position &nbsp;</span>
-  <span style="background:${c.grey.bg};padding:1px 6px;border-radius:3px;color:${c.grey.fg};font-size:11px">grey</span> <span class="dim">not in word</span><br><br>
-  <span class="dim">type a ${WORDLE_CONFIG.wordLength}-letter word to guess · type </span><span class="yel">quit</span><span class="dim"> to exit</span>
-</div>`);
+      <span class="grn" style="font-weight:700;font-size:15px;letter-spacing:2px">WORDLE</span>  <span class="dim">— guess the ${WORDLE_CONFIG.wordLength}-letter word · ${WORDLE_CONFIG.maxTries} tries</span><br><br>
+      <span style="background:${c.green.bg};padding:1px 6px;border-radius:3px;color:${c.green.fg};font-size:11px">green</span> <span class="dim">correct position &nbsp;</span>
+      <span style="background:${c.yellow.bg};padding:1px 6px;border-radius:3px;color:${c.yellow.fg};font-size:11px">yellow</span> <span class="dim">wrong position &nbsp;</span>
+      <span style="background:${c.grey.bg};padding:1px 6px;border-radius:3px;color:${c.grey.fg};font-size:11px">grey</span> <span class="dim">not in word</span><br><br>
+      <span class="dim">type a ${WORDLE_CONFIG.wordLength}-letter word to guess · type </span><span class="yel">quit</span><span class="dim"> to exit</span>
+    </div>`);
   }
 
   private handleWordleGuess(guess: string): void {
-    if (guess === 'quit' || guess === 'exit') {
+    if (guess === "quit" || guess === "exit") {
       const word = this.wordleWord;
       this.wordleActive = false;
-      this.wordleWord = '';
+      this.wordleWord = "";
       this.wordleGuesses = [];
-      this.pushOutput(`<span class="dim">Wordle exited. The word was </span><span class="yel">${word}</span><span class="dim">.</span>`);
+      this.pushOutput(
+        `<span class="dim">Wordle exited. The word was </span><span class="yel">${word}</span><span class="dim">.</span>`,
+      );
       return;
     }
 
     if (guess.length !== WORDLE_CONFIG.wordLength || !/^[a-z]+$/.test(guess)) {
-      this.pushOutput(`<span class="red">invalid:</span> <span class="dim">must be exactly 5 letters.</span>`);
+      this.pushOutput(
+        `<span class="red">invalid:</span> <span class="dim">must be exactly 5 letters.</span>`,
+      );
       return;
     }
 
@@ -689,9 +716,11 @@ ${stages}
 
     if (guess === this.wordleWord) {
       const tries = this.wordleGuesses.length;
-      this.pushOutput(`${row}<br><span class="grn">🎉 correct! Got it in ${tries} ${tries === 1 ? 'try' : 'tries'}.</span> <span class="dim">Run </span><span class="grn">./wordle</span><span class="dim"> to play again.</span>`);
+      this.pushOutput(
+        `${row}<br><span class="grn">🎉 correct! Got it in ${tries} ${tries === 1 ? "try" : "tries"}.</span> <span class="dim">Run </span><span class="grn">./wordle</span><span class="dim"> to play again.</span>`,
+      );
       this.wordleActive = false;
-      this.wordleWord = '';
+      this.wordleWord = "";
       this.wordleGuesses = [];
       return;
     }
@@ -700,34 +729,38 @@ ${stages}
     if (remaining === 0) {
       const word = this.wordleWord;
       this.wordleActive = false;
-      this.wordleWord = '';
+      this.wordleWord = "";
       this.wordleGuesses = [];
-      this.pushOutput(`${row}<br><span class="red">game over.</span> <span class="dim">The word was </span><span class="yel">${word}</span><span class="dim">. Run </span><span class="grn">./wordle</span><span class="dim"> to try again.</span>`);
+      this.pushOutput(
+        `${row}<br><span class="red">game over.</span> <span class="dim">The word was </span><span class="yel">${word}</span><span class="dim">. Run </span><span class="grn">./wordle</span><span class="dim"> to try again.</span>`,
+      );
       return;
     }
 
-    this.pushOutput(`${row}<br><span class="dim">${remaining} ${remaining === 1 ? 'guess' : 'guesses'} remaining</span>`);
+    this.pushOutput(
+      `${row}<br><span class="dim">${remaining} ${remaining === 1 ? "guess" : "guesses"} remaining</span>`,
+    );
   }
 
   private wordleColorRow(guess: string, target: string): string {
     const len = WORDLE_CONFIG.wordLength;
     const used = new Array(len).fill(false);
-    const colors = new Array(len).fill('grey');
+    const colors = new Array(len).fill("grey");
 
     // First pass: greens
     for (let i = 0; i < len; i++) {
       if (guess[i] === target[i]) {
-        colors[i] = 'green';
+        colors[i] = "green";
         used[i] = true;
       }
     }
 
     // Second pass: yellows
     for (let i = 0; i < len; i++) {
-      if (colors[i] === 'green') continue;
+      if (colors[i] === "green") continue;
       for (let j = 0; j < len; j++) {
         if (!used[j] && guess[i] === target[j]) {
-          colors[i] = 'yellow';
+          colors[i] = "yellow";
           used[j] = true;
           break;
         }
@@ -735,10 +768,18 @@ ${stages}
     }
 
     const c = WORDLE_CONFIG.colors;
-    const tiles = guess.split('').map((ch, i) => {
-      const { bg, fg } = colors[i] === 'green' ? c.green : colors[i] === 'yellow' ? c.yellow : c.grey;
-      return `<span style="background:${bg};color:${fg};width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;font-weight:700;font-size:14px;text-transform:uppercase">${ch}</span>`;
-    }).join('');
+    const tiles = guess
+      .split("")
+      .map((ch, i) => {
+        const { bg, fg } =
+          colors[i] === "green"
+            ? c.green
+            : colors[i] === "yellow"
+              ? c.yellow
+              : c.grey;
+        return `<span style="background:${bg};color:${fg};width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;font-weight:700;font-size:14px;text-transform:uppercase">${ch}</span>`;
+      })
+      .join("");
 
     return `<span style="display:inline-flex;gap:5px">${tiles}</span>`;
   }
@@ -758,7 +799,10 @@ ${stages}
   }
 
   private pushInput(cmd: string): void {
-    this.lines.update((l) => [...l, { type: "input", content: cmd, dir: this.currentDir() }]);
+    this.lines.update((l) => [
+      ...l,
+      { type: "input", content: cmd, dir: this.currentDir() },
+    ]);
   }
 
   private pushOutput(html: string): void {
