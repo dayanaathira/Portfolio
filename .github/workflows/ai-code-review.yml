@@ -1,0 +1,41 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: AI Code Review
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          direct_prompt: |
+            You are a senior frontend developer reviewing a pull request for an Angular portfolio website.
+
+            Review the changes in this PR and provide:
+            1. **Summary** — a brief overview of what the changes do
+            2. **Inline comments** — flag specific lines for bugs, security issues, accessibility problems, or Angular anti-patterns
+            3. **Overall assessment** — approve, request changes, or leave comments
+
+            Focus on:
+            - Angular best practices (OnPush change detection, proper lifecycle hooks, memory leaks from unsubscribed observables)
+            - TypeScript correctness and type safety
+            - CSS/SCSS quality and responsiveness
+            - Accessibility (ARIA, semantic HTML)
+            - Performance (unnecessary re-renders, large bundle impact)
+            - Security (XSS via innerHTML, unsafe bindings)
+            - Hardcoded values that should be extracted — magic strings, repeated literals, numeric constants, route paths, label text, or status values that appear hardcoded in components or services. For each one found, suggest the concrete change: either add it to an existing file (src/app/shared/enums/*.enum.ts for enums, src/app/shared/enums/*.const.ts for constants) or create a new file if no suitable one exists. Show the exact export to add and how to replace the hardcoded value with the reference.
+
+            Be concise. Don't flag style nits unless they have a real impact.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
