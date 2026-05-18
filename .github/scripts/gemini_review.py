@@ -1,4 +1,4 @@
-import os, json, requests
+import os, json, time, requests
 
 diff = open("pr_diff.txt").read()
 
@@ -29,10 +29,18 @@ Rules:
 Diff:
 """ + diff[:28000]
 
-resp = requests.post(
-    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={os.environ['GEMINI_API_KEY']}",
-    json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.2}},
-)
+url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={os.environ['GEMINI_API_KEY']}"
+body = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.2}}
+
+for attempt in range(4):
+    resp = requests.post(url, json=body)
+    if resp.status_code == 429:
+        wait = 15 * (attempt + 1)
+        print(f"Rate limited, retrying in {wait}s...")
+        time.sleep(wait)
+        continue
+    break
+
 resp.raise_for_status()
 
 raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
