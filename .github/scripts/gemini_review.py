@@ -30,7 +30,7 @@ Diff:
 """ + diff[:28000]
 
 resp = requests.post(
-    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={os.environ['GEMINI_API_KEY']}",
+    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={os.environ['GEMINI_API_KEY']}",
     json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.2}},
 )
 resp.raise_for_status()
